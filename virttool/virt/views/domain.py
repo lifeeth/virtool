@@ -82,7 +82,7 @@ def edit(request,id):
     
     form = forms.DomainForm(domdict, instance=domain)
     return render_to_response('virt/domainedit.html', {'domain': domain,
-                                                            'form': form }, 
+                                                       'form': form }, 
                                                 context_instance=RequestContext(request))
 
 def save(request):
@@ -106,7 +106,6 @@ def save(request):
 # libvirt actions 
 #
 def migrate(request, domainid, nodeid):
-
     domain = get_object_or_404(models.Domain, pk=domainid)
     node = get_object_or_404(models.Node, pk=nodeid)
     message = virtclient.live_migrate(domain.id,node.id)
@@ -166,8 +165,6 @@ def reboot(request,id):
     if libvirtdomain:
         libvirtdomain.reboot()
         request.user.message_set.create(message=_("Reboot OK"))
-        domain.state=98
-        domain.save()
 
     return HttpResponseRedirect(reverse('domain_edit',args=[domain.id]))
     
@@ -178,7 +175,7 @@ def shutdown(request,id):
     if libvirtdomain:
         libvirtdomain.shutdown()
         request.user.message_set.create(message=_("Shutdown OK"))
-        domain.state=95
+        domain.state=96
         domain.save()
         
     return HttpResponseRedirect(reverse('domain_edit',args=[domain.id]))    

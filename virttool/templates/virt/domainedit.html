@@ -24,7 +24,7 @@
     #id_os_kernel, #id_os_initrd, #id_os_cmdline { width: 300px;}
     #id_os_type, #id_os_loader { width: 300px; }
 </style>
-{% load extras %}
+
 
 <div class="post">
 
@@ -32,7 +32,16 @@
 	<div class="post_date"> <a href="#"></a></div>
 	<div class="post_body">
 	  	
+        <div class="post_meta" style="font-size: 12px;">
+            <h3> Domain Info </h3>
+    	     Last State {{ domain.get_state_display }} <br/>
+    	     
+    	     <br/>
+    	     <br/>
+    	     
 
+    	</div>
+    	
 	  	 
             <input class="form_bt_cancelar" style="float: right;" type="submit" value="{% trans "Destroy" %}" onclick="if (confirm('Confirm Destroy ?')) { 
             window.location='{% url domain_destroy domain.id %}'}"/>

@@ -9,10 +9,7 @@ if PATH_APP not in sys.path:
 import settings 
 os.environ["DJANGO_SETTINGS_MODULE"] = "settings"
 
-
 from virt import models 
-
-
 # Twisted Stuff
 from twisted.internet import reactor, task, ssl
 from twisted.web import server, resource
@@ -75,55 +72,8 @@ def ScanNodes():
 
 class VirtToolService:
     @expose_request
-    def live_migrate(self, request, domainid, nodeid):
-        domain = None
-        dstnode = None
-        
-        try:
-            domain = models.Domain.objects.get(pk=domainid)
-        except models.Domain.DoesNotExist:
-            return "Domain not found "
-        try:
-            dstnode = models.Node.objects.get(pk=nodeid)
-        except:
-            return "Node not found"
-                
-        libvirtnodedst, errornodedst = dstnode.getlibvirt()
-        libvirtdomain, errordomain = domain.getlibvirt()
-        
-        if libvirtnodedst and libvirtdomain and domain.node != dstnode:
-            # change state to wait migrate
-            domain.state = 97
-            domain.save()
-            
-            migrateok=False
-            msginfo=''
-            
-            try:
-                libvirtnodedst.migrate(libvirtdomain, models.libvirt.VIR_MIGRATE_LIVE, None, dstnode.hostname, 0)
-                migrateok=True
-            except:
-                migrateok=False
-                
-            if migrateok == True:
-                domain.node = dstnode
-                domain.save()
-                msginfo="Migration successful"
-            else:
-                msginfo="Failed migration"   
-            
-            # update state from current libvirtdomain
-            libvirtdomain, errordomain = domain.getlibvirt()
-            if libvirtdomain:
-                domain.state = domain_.info()[0]
-            else:
-                domain.state =  99
-            
-            domain.save()
-            return msginfo
-            
-        else:
-            return "libvirt to node and / or domain does not respond"
+    def console(self, domainid):
+        pass
         
 
 def authenticate(username, password):

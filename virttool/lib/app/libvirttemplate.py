@@ -27,8 +27,18 @@ def GENERAL_METADATA(type_,name):
 
  
 def BASIC_RESOURCE(memory, vcpu, currentMemory=None):
+
+    try:
+        memory = int(memory) * 1024
+    except:
+        pass
+
     xml = "  <memory>%s</memory>\n" %memory
     if currentMemory:
+        try:
+            currentMemory = int(int(currentMemory) * 1024)
+        except:
+            pass
         xml += "  <currentMemory>%s</currentMemory>\n" %currentMemory
     xml += "  <vcpu>%s</vcpu>\n" %vcpu
     return xml 

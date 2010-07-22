@@ -4,6 +4,16 @@ import virt
 from django.utils.translation import ugettext as _
 from virt import fields as extrafields
 
+class StrippedCharField(forms.CharField):
+    def __init__(self, max_length=None, min_length=None, strip=True, *args, **kwargs):
+        super(StrippedCharField, self).__init__(max_length, min_length, *args, **kwargs)
+        self.strip = strip
+
+    def clean(self, value):
+        if self.strip:
+            value = value.strip()
+        return super(StrippedCharField, self).clean(value)
+        
 class NodeForm(forms.ModelForm):
     class Meta:
         model = virt.models.Node
@@ -68,10 +78,10 @@ class DiskForm(forms.ModelForm):
     
     disk_type = forms.CharField(label=_('Type'), max_length=5, widget=forms.Select(choices=virt.models.DISK_TYPES))
     device = forms.CharField(label=_('Device'), max_length=6, widget=forms.Select(choices=virt.models.DISKDEV_TYPES))
-    source = forms.CharField(label=_('Source'), max_length=128)
-    target = forms.CharField(label=_('Target'), max_length=128)
-    target_bus = forms.CharField(label=_('Target Bus'), max_length=10, required=False)
-    driver = forms.CharField(label=_('Driver'), max_length=128, required=False)
+    source = StrippedCharField(label=_('Source'), max_length=128)
+    target = StrippedCharField(label=_('Target'), max_length=128)
+    target_bus = StrippedCharField(label=_('Target Bus'), max_length=10, required=False)
+    driver = StrippedCharField(label=_('Driver'), max_length=128, required=False)
     readonly = forms.BooleanField(label=_('Read only ?'), required=False, initial=False)
     shareable = forms.BooleanField(label=_('Shareable ?'), required=False, initial=False, \
                                 help_text=_('Shared between domains (assuming the hypervisor and OS support this)'))
@@ -85,10 +95,10 @@ class InterfaceForm(forms.ModelForm):
         exclude = ('xml','domain','type','xml',)
         
     interface_type = forms.CharField(label=_('Type'), max_length=20, widget=forms.Select(choices=virt.models.INTERFACE_TYPES))
-    source = forms.CharField(label=_('Source'), max_length=128, required=False)
-    target = forms.CharField(label=_('Target'), max_length=128, required=False)
-    mac = forms.CharField(label=_('MAc Address'), required=False)
-    script = forms.CharField(label=_('Script Path'), required=False)
+    source = StrippedCharField(label=_('Source'), max_length=128, required=False)
+    target = StrippedCharField(label=_('Target'), max_length=128, required=False)
+    mac = StrippedCharField(label=_('MAc Address'), required=False)
+    script = StrippedCharField(label=_('Script Path'), required=False)
     model = forms.CharField(label=_('Model'), required=False, widget=forms.Select(choices=virt.models.INTERFACE_MODELS))
     args = forms.CharField(label=_('Args'), widget=forms.Textarea, required=False)
 
@@ -125,7 +135,7 @@ class EmulatorForm(forms.ModelForm):
         model = virt.models.Device
         exclude = ('xml','domain','type','xml',)
         
-    emulator = forms.CharField(label=_('Emulator'),required=False)
+    emulator = StrippedCharField(label=_('Emulator'),required=False)
    
     
 class CSPForm(forms.ModelForm):
@@ -133,8 +143,8 @@ class CSPForm(forms.ModelForm):
         model = virt.models.Device
         exclude = ('xml','domain','type','xml',)
         
-    source = forms.CharField(label=_('Source'), max_length=128, required=False)
-    target = forms.CharField(label=_('Target'), max_length=128, required=False)   
+    source = StrippedCharField(label=_('Source'), max_length=128, required=False)
+    target = StrippedCharField(label=_('Target'), max_length=128, required=False)   
     
 class GenericDeviceForm(forms.ModelForm):
     class Meta:

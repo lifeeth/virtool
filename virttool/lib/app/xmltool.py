@@ -9,8 +9,8 @@ def get_domain_dict(XML,exclude=['uuid','devices']):
     
     textelements = ['name',
                     'uuid',
-                    'memory',
-                    'currentMemory',
+                    'memory',            
+                    'currentMemory',     
                     'vcpu',
                     'bootloader',
                     'bootloader_args',
@@ -33,12 +33,21 @@ def get_domain_dict(XML,exclude=['uuid','devices']):
                 if child1.nodeType == child1.ELEMENT_NODE and child1.localName in exclude:
                     child1.parentNode.removeChild(child1)
                 
-                if child1.nodeType == child1.ELEMENT_NODE and child1.localName in textelements: 
-                    try:
-                        domain[child1.localName] = child1.childNodes[0].nodeValue
-                    except:
-                        pass
-                        
+                # basic elements
+                if child1.nodeType == child1.ELEMENT_NODE and child1.localName in textelements:
+                    
+                    if child1.localName in ['memory','currentMemory']:
+                        try:
+                            # format memory bytes to mbytes 
+                            domain[child1.localName] = int(child1.childNodes[0].nodeValue) / 1024
+                        except:
+                            pass
+                    else:
+                        try:
+                            domain[child1.localName] = child1.childNodes[0].nodeValue
+                        except:
+                            pass
+
                 
                 if child1.nodeType == child1.ELEMENT_NODE and child1.localName == 'features':
                     for ft in child1.childNodes:
@@ -305,8 +314,6 @@ def build_domain_xml(dom,exclude=[]):
       
 def build_device_xml(dev,exclude=[]):
     xml = str()
-    
-    print dev
     if dev.get('type') == 'disk':
         xml += libvirttemplate.HARD_DRIVE(dev.get('disk_type'),
                                           dev.get('device'),

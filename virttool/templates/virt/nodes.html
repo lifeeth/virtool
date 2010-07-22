@@ -47,7 +47,8 @@
         <div class="clearer">&nbsp;</div>
         	
     	<table class="tablex" border="0" cellpadding="0" cellspacing="0">
-               <tr>
+               <tr> 
+                    <th> ID </th>
                     <th> Name </th>
                     <th> Hostname </th>
                     <th> Total Memory </th>
@@ -63,7 +64,8 @@
                 {% for n in nodes.object_list %}
                   
                         {% if n.nodelibvirt.0 %}
-    	               <tr>
+    	               <tr> 
+    	                    <td> <a href="{% url node_edit n.node.id %}">{{ n.node.id }} </a></td>
                             <td> {{ n.node.name }} </td>
                             <td> {{ n.node.hostname }} </td>
                             <td> {{ n.nodelibvirt.0.getInfo.1 }} MB </td>
@@ -76,7 +78,7 @@
                         </tr>
                         {% else %}
                         <tr>
-
+                              <td> <a href="{% url node_edit n.node.id %}"> {{ n.node.id }} </a> </td>
                               <td> {{ n.node.name }} </td>
                               <td> {{ n.node.hostname }} </td>
                               <td> - </td>
