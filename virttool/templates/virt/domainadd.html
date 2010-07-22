@@ -36,7 +36,7 @@
         <form class="formx" action="{% url domain_add %}" method="post">
 
             {% for field in form %}
-            <p>    
+            <p> 
                 {{ field.label_tag }} {{ field }} 
                 <span class="fielderror"> {% for error in field.errors %} {{ error }} &nbsp; {% endfor %} </span>
             </p>    
