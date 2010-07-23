@@ -67,6 +67,8 @@ def add(request, domainid, typedevice):
                 form = getform(initial={'mac' : xmltool.libvirttemplate.macxen()[0]}, instance=device_)
             except:
                 form = getform(instance=device_)
+        else:
+            form = getform(instance=device_)
             
         return render_to_response('virt/deviceadd.html', { 'form' : form, 'domain': domain, 'type': typedevice },
                                         context_instance=RequestContext(request))

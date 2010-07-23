@@ -14,6 +14,8 @@ class StrippedCharField(forms.CharField):
             value = value.strip()
         return super(StrippedCharField, self).clean(value)
         
+        
+        
 class NodeForm(forms.ModelForm):
     class Meta:
         model = virt.models.Node
