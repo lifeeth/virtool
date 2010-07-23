@@ -92,7 +92,7 @@ def save(request):
         currentdomain = form.save()
         currentdomain.xml = xmltool.build_domain_xml(request.POST)
         currentdomain.save()
-        request.user.message_set.create(message=_("Node successfully changed"))
+        request.user.message_set.create(message=_("Domain successfully changed"))
     else:
         return render_to_response('virt/domainedit.html', {'form': form ,
                                                            'domain': domain },
