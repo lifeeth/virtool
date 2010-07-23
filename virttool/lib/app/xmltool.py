@@ -171,14 +171,16 @@ def get_device_dict(XML,exclude=[]):
                 if child0.getAttribute('port'):
                     if child0.getAttribute('port') == '-1':
                         device['vnc_port'] = None
+                    else:
+                        device['vnc_port'] = child0.getAttribute('port')
                 if child0.getAttribute('autoport'):
                     device['autoport'] = True
-                if child0.getAttribute('vnc_listen'):
+                if child0.getAttribute('listen'):
                     device['vnc_listen'] = child0.getAttribute('listen')
                 else:
                     device['vnc_listen'] = '0.0.0.0'
                     
-                device['vnc_passwd'] = child0.getAttribute('vnc_passwd')
+                device['vnc_passwd'] = child0.getAttribute('passwd')
             
             
         # Input 
@@ -344,6 +346,7 @@ def build_device_xml(dev,exclude=[]):
     if dev.get('type') == 'graphics':
         if dev.get('graphics_type') == 'vnc':
             xml += libvirttemplate.GRAPHICAL_VNC(dev.get('vnc_listen'),
+                                                 dev.get('autoport'),
                                                  dev.get('vnc_port') or '-1', 
                                                  dev.get('vnc_passwd'))
         
