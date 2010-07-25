@@ -45,6 +45,9 @@
 	  	 
             <input class="form_bt_cancelar" style="float: right;" type="submit" value="{% trans "Destroy" %}" onclick="if (confirm('Confirm Destroy ?')) { 
             window.location='{% url domain_destroy domain.id %}'}"/>
+            
+            <input class="form_bt_reboot" style="float: right;" type="submit" value="{% trans "Reboot" %}" onclick="if (confirm('Confirm Reboot ?')) { 
+             window.location='{% url domain_reboot domain.id %}'}"/>            
         
             <input class="form_bt_alterar" style="float: right;" type="submit" value="{% trans "Shutdown" %}" onclick="if (confirm('Confirm Shutdown ?')) { 
             window.location='{% url domain_shutdown domain.id %}'}"/>

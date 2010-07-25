@@ -117,7 +117,7 @@ GRAPHICTYPES = ( ('vnc','vnc'),
                  #('rdp','rdp') 
                  )
 
-INPUT_BUS = ( ('usb','usb') , ('ps2','ps2') )
+INPUT_BUS = ( ('usb','usb') , ('ps2','ps2'), ('xen','xen') )
 INPUT_TYPES = ( ('mouse','mouse'), ('tablet','tablet') )
 
 

@@ -40,17 +40,18 @@ def ScanNodes():
             for domain in models.Domain.objects.filter(Q(node=node),
                                                       ~Q(state__in=[96,97,99])):
                 domain.updatestate()
-                
-                if domain.name in domainslist:
-                    print "%s OK" %domain.name
-                else:
+                if domain.name not in domainslist:
                     print "%s Down" %domain.name
                     #
                     # check domain 
                     #
-                    if domain.state not in [0,1,2]:
+                    if domain.state not in [0,1,2,3,4,95,97]:
                         print "Libvirt Create Domain %s" %domain.name
                         #node_.createXML(domain.getxml(),0)
+                        
+                        #
+                        # developing 
+                        #
             print 
 
                     

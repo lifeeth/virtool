@@ -96,9 +96,29 @@
 	margin-right: 10px;
 	float: left
 }
+
 .form_bt_ativar:hover {
 	border: 1px solid #678866;
 	background-color: #678866;
+}
+
+
+.form_bt_reboot {
+	border: 1px solid #3375ac;
+	background-color: #3375ac;
+	padding: 3px;
+	color: white;
+	font-size: 14px;
+	-moz-border-radius: 3px;
+	font-weight: bold;
+	cursor: pointer;
+	margin-right: 10px;
+	float: left
+}
+
+.form_bt_reboot:hover {
+	border: 1px solid #204a6d;
+	background-color: #204a6d;
 }
 
 

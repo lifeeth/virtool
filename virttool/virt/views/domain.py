@@ -108,92 +108,47 @@ def save(request):
 def migrate(request, domainid, nodeid):
     domain = get_object_or_404(models.Domain, pk=domainid)
     node = get_object_or_404(models.Node, pk=nodeid)
-    message = virtclient.live_migrate(domain.id,node.id)
+    message = virtclient.migrate(domain,node)
     request.user.message_set.create(message=message)
-    
     return HttpResponseRedirect(reverse('domain_edit',args=[domain.id]))    
     
     
 def resume(request,id):
     domain = get_object_or_404(models.Domain, pk=id)
-    libvirtdomain, error_ = domain.getlibvirt()
-    if libvirtdomain:
-        libvirtdomain.resume()
-        request.user.message_set.create(message=_("Resume OK"))
-        domain.state=1
-        domain.save()
-        
+    message = virtclient.resume(domain)
+    request.user.message_set.create(message=message)
     return HttpResponseRedirect(reverse('domain_edit',args=[domain.id]))    
     
 
 def suspend(request, id):
     domain = get_object_or_404(models.Domain, pk=id)
-    libvirtdomain, error_ = domain.getlibvirt()
-    if libvirtdomain:
-        libvirtdomain.suspend()
-        request.user.message_set.create(message=_("Suspend OK"))
-        domain.state=3
-        domain.save()
-        
+    message = virtclient.suspend(domain)
+    request.user.message_set.create(message=message)
     return HttpResponseRedirect(reverse('domain_edit',args=[domain.id]))         
+
 
 def create(request,id):
     domain = get_object_or_404(models.Domain, pk=id)
-    libvirtdomain, error_ = domain.getlibvirt()
-    if not libvirtdomain:
-        node_, error_ = domain.node.getlibvirt()
-        if node_:
-            startok = False
-            try:
-                node_.createXML(domain.getxml(),0)
-                startok = True
-                request.user.message_set.create(message=_("Startup OK"))
-            except Exception, e:
-                request.user.message_set.create(message=e)
-                print e
-            if startok == True:
-                
-                domain.state=1
-                domain.save()
-            
-                
-    return HttpResponseRedirect(reverse('domain_edit',args=[domain.id]))    
-
-def reboot(request,id):
-    domain = get_object_or_404(models.Domain, pk=id)
-    libvirtdomain, error_ = domain.getlibvirt()
-    if libvirtdomain:
-        libvirtdomain.reboot()
-        request.user.message_set.create(message=_("Reboot OK"))
-
+    message = virtclient.create(domain)
+    request.user.message_set.create(message=message)
     return HttpResponseRedirect(reverse('domain_edit',args=[domain.id]))
     
+    
+def reboot(request,id):
+    domain = get_object_or_404(models.Domain, pk=id)
+    message = virtclient.reboot(domain)
+    request.user.message_set.create(message=message)
+    return HttpResponseRedirect(reverse('domain_edit',args=[domain.id]))
                     
 def shutdown(request,id):
     domain = get_object_or_404(models.Domain, pk=id)
-    libvirtdomain, error_ = domain.getlibvirt()
-    if libvirtdomain:
-        libvirtdomain.shutdown()
-        request.user.message_set.create(message=_("Shutdown OK"))
-        domain.state=96
-        domain.save()
-        
-    return HttpResponseRedirect(reverse('domain_edit',args=[domain.id]))    
-
-
+    message = virtclient.shutdown(domain)
+    request.user.message_set.create(message=message)
+    return HttpResponseRedirect(reverse('domain_edit',args=[domain.id]))
+    
 def destroy(request,id):
     domain = get_object_or_404(models.Domain, pk=id)
-    domain_, error_ = domain.getlibvirt()
-    if domain_:
-        domain_.destroy()
-        request.user.message_set.create(message=_("Destroy OK"))
-        domain.state=96
-        domain.save()
-     
-    return HttpResponseRedirect(reverse('domain_edit',args=[domain.id]))   
+    message = virtclient.destroy(domain)
+    request.user.message_set.create(message=message)
+    return HttpResponseRedirect(reverse('domain_edit',args=[domain.id]))
     
-
-
-
-
-
