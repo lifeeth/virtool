@@ -23,6 +23,9 @@ urlpatterns = patterns('',
     # Device
     url(r'^domain/(\d+)/device/(\w+)/add/$', 'virt.views.device.add', name="device_add"),
     url(r'^device/(\d+)/$', 'virt.views.device.edit', name="device_edit"),
+    url(r'^device/(\d+)/attach/$', 'virt.views.device.attachdevice', name="device_attach"),
+    url(r'^device/(\d+)/detach/$', 'virt.views.device.detachdevice', name="device_detach"),
+    
     url(r'^device/(\d+)/delete/$', 'virt.views.device.delete', name="device_delete"),
     url(r'^device/save/$', 'virt.views.device.save', name="device_save"),
     

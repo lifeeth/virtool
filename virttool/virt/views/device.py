@@ -124,5 +124,18 @@ def save(request):
                                                    context_instance=RequestContext(request))
             
     
+
+
+def attachdevice(request,id):
+    device = get_object_or_404(models.Device, pk=id)   
+    message = virtclient.attachdevice(device)
+    request.user.message_set.create(message=message)
+    return HttpResponseRedirect(reverse('domain_edit',args=[device.domain.id]))
+
     
-            
+def detachdevice(request,id):
+    device = get_object_or_404(models.Device, pk=id)   
+    message = virtclient.detachdevice(device)
+    request.user.message_set.create(message=message)
+    return HttpResponseRedirect(reverse('domain_edit',args=[device.domain.id]))
+    

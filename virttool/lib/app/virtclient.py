@@ -1,4 +1,5 @@
 import virt 
+import libvirt
 from django.utils.translation import ugettext as _
 
 #
@@ -17,7 +18,7 @@ def migrate(domain, dstnode):
         msg_ = ''
         
         try:
-            libvirtnodedst.migrate(libvirtdomain, virt.models.libvirt.VIR_MIGRATE_LIVE, None, dstnode.hostname, 0)
+            libvirtdomain.migrate(libvirtnodedst, virt.models.libvirt.VIR_MIGRATE_LIVE, None, dstnode.hostname, 0)
             domain.node = dstnode
             domain.save()
             msg_ = _("Migration successful")
@@ -63,23 +64,32 @@ def suspend(domain):
         return error_ or _(" Domain is not running")
 
 # Create
-def create(domain):
-    libvirtdomain, error_ = domain.getlibvirt()
-    # check libvirt Domain 
-    if not libvirtdomain:
-        node_, nerror_ = domain.node.getlibvirt()        
-        if node_:
-            try:
-                node_.createXML(domain.getxml(),0)
-                domain.state=1
-                domain.save()
-                return _("Create OK")
-            except Exception, e:
-                return e
-        else:
-            return nerror_
+def create(domain, libvirtnode=None):
+    
+    if libvirtnode:
+        try:
+            libvirtnode.createXML(domain.getxml(),0)
+            domain.state=1
+            domain.save()
+            return _("Create OK")
+        except Exception, e:
+            return e
     else:
-        return _("Domain is not created because libvirt domain is running")    
+        libvirtdomain, errordomain = domain.getlibvirt()
+        if not libvirtdomain:
+            libvirtnode_, error = domain.node.getlibvirt()
+            if libvirtnode_:
+                try:
+                    libvirtnode_.createXML(domain.getxml(),0)
+                    domain.state=1
+                    domain.save()
+                    return _("Create OK")
+                except Exception, e:
+                    return e
+            else:
+               return nerror_ or _("Node is not responding") 
+        else:
+            return _("Domain can not be created because it is running")    
                 
 
 # Reboot
@@ -89,7 +99,7 @@ def reboot(domain):
         libvirtdomain.reboot(0)
         return _("Reboot OK")
     else:
-        return error_ or _("Domain can not be restarted because it is not running")
+        return error_ or _("Domain is not running")
         
 
 # Shutdown 
@@ -113,6 +123,36 @@ def destroy(domain):
         domain.save()
         return _("Destroy OK")
     else:
-        return error_  or _("Domain can not be destroyed because it is not running")               
+        return error_  or _("Domain is not running")               
 
+
+# attachDevice
+# Create a virtual device attachment to backend.
+def attachdevice(device):
+    libvirtdomain, error_ = device.domain.getlibvirt()
+    if libvirtdomain:
+        try:
+            libvirtdomain.attachDevice(device.xml)
+            return _("Device connected successfully")
+        except Exception, e:
+            return e            
+    else:
+        return _("Domain is not running")
+
+    
+# detachDevice
+# Destroy a virtual device attachment to backend.
+def detachdevice(device):
+    libvirtdomain, error_ = device.domain.getlibvirt()
+    if libvirtdomain:
+        try:
+            libvirtdomain.detachDevice(device.xml)
+            return _("Device disconnected successfully")
+        except Exception, e:
+            return e            
+    else:
+        return _("Domain is not running")
+
+        
+           
         

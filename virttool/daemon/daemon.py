@@ -10,23 +10,15 @@ import settings
 os.environ["DJANGO_SETTINGS_MODULE"] = "settings"
 
 from virt import models 
-# Twisted Stuff
+from lib.app import virtclient
+from django.db.models import F,Q
+from datetime import datetime, date
+
+# Twisted 
 from twisted.internet import reactor, task, ssl
 from twisted.web import server, resource
 
-#PyAMF Stuff
-from pyamf.remoting.gateway.twisted import TwistedGateway
-from pyamf.remoting.gateway import expose_request
-
-# Other things
-from datetime import datetime, date
-
-from django.db.models import F,Q
-
-
-
-
-def ScanNodes():
+def CheckNodes():
 
     domainslist = []
     print "Check Date %s" %datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -46,13 +38,13 @@ def ScanNodes():
                     # check domain 
                     #
                     if domain.state not in [0,1,2,3,4,95,97]:
-                        print "Libvirt Create Domain %s" %domain.name
-                        #node_.createXML(domain.getxml(),0)
+                        print "Libvirt creating domain %s" %domain.name
+    
+                        #virtclient.create(domain,node_)
                         
                         #
                         # developing 
                         #
-            print 
 
                     
                     
@@ -69,39 +61,15 @@ def ScanNodes():
                 #
     
             
-    
-
-class VirtToolService:
-    @expose_request
-    def console(self, domainid):
-        pass
-        
-
-def authenticate(username, password):
-    print "Authenticating..."
-    if username == 'admin' and password == settings.DAEMON_PASSWORD:
-        print "Authentication succeeded"
-        return True
-    else:
-        print "Authentication failed"
-        return False
 
 
 if __name__ == '__main__':
     
     print "Libvirt Scanner Started"
-    scanner = task.LoopingCall(ScanNodes)
+    scanner = task.LoopingCall(CheckNodes)
     scanner.start(settings.REFRESH_INTERVAL)    
-
-    gateway = TwistedGateway({'VirtToolService': VirtToolService()}, expose_request=False, authenticator=authenticate)
     root = resource.Resource()
-    root.putChild('', gateway)
-    try:
-        sslContext = ssl.DefaultOpenSSLContextFactory(
-                         os.path.join(PATH_APP, 'daemon/cakey.pem'),
-                         os.path.join(PATH_APP, 'daemon/cacert.pem'))
-    except:
-        print "You need some SSL certificates, shutting down..."
-        sys.exit()
-    reactor.listenSSL(8789, server.Site(root), contextFactory = sslContext)
+    reactor.listenTCP(8789, server.Site(root))
     reactor.run()
+    
+    
