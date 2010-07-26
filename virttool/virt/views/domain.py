@@ -62,7 +62,7 @@ def add(request):
                                         context_instance=RequestContext(request))
     else:                                    
         form = forms.DomainForm()   
-        return render_to_response('virt/domainadd.html', { 'form' : form, 'macrandom': macrandom },
+        return render_to_response('virt/domainadd.html', { 'form' : form },
                                     context_instance=RequestContext(request))
 
 def delete(request,id):
