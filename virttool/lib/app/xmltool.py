@@ -227,7 +227,7 @@ def get_device_dict(XML,exclude=[]):
         # Console, Parallel, serial 
         if child0.nodeType == child0.ELEMENT_NODE and child0.localName in ['console','serial','parallel']:
             device['type'] = child0.localName
-            device['%s_type'] = child0.getAttribute('type')
+            device['%s_type' %child0.localName] = child0.getAttribute('type')
             
             
             for child1 in child0.childNodes:
