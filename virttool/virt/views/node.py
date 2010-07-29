@@ -43,19 +43,19 @@ def add(request):
             request.user.message_set.create(message=_("Node registered successfully"))
             return HttpResponseRedirect(reverse('node_get'))
         else:
-            return render_to_response('virt/nodeadd.html', {'form': form },
+            return render_to_response('virt/nodeadd.html', {'form': form, 'URIHELP': models.DRIVERS_DESCRIPTION },
                                         context_instance=RequestContext(request))
     else:
                                         
         form = forms.NodeForm()
-        return render_to_response('virt/nodeadd.html', {'form': form },
+        return render_to_response('virt/nodeadd.html', {'form': form, 'URIHELP': models.DRIVERS_DESCRIPTION },
                                             context_instance=RequestContext(request))
 
 
 def edit(request,id):
     node = get_object_or_404(models.Node, pk=id)
     form = forms.NodeForm(instance=node)    
-    return render_to_response('virt/nodeedit.html', {'form': form, 'node': node }, 
+    return render_to_response('virt/nodeedit.html', {'form': form, 'node': node, 'URIHELP': models.DRIVERS_DESCRIPTION }, 
                                         context_instance=RequestContext(request))    
 
 def delete(request,id):
@@ -71,6 +71,13 @@ def updatedomains(request,id):
     form = forms.NodeForm(instance=node)   
     request.user.message_set.create(message=_("Domains imported Node %s" %node.name ))
     return HttpResponseRedirect(reverse('node_edit',args=[node.id]))
+    
+def updatecapabilities(request,id):
+    node = get_object_or_404(models.Node, pk=id)
+    node.update_capabilities()
+    request.user.message_set.create(message=_("Updated Capabilities"))  
+    return HttpResponseRedirect(reverse('node_edit',args=[node.id]))  
+    
     
 def save(request):
     node = get_object_or_404(models.Node, pk=request.POST.get('id'))

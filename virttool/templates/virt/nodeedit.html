@@ -9,6 +9,14 @@
 <script type="text/javascript" charset="utf-8">
   $(document).ready(function() {
     $('#nodeop').addClass("current_page_item");
+    
+    $('#showhelp').click(function() {       
+       $('#driverhelp').slideDown('normal');        
+    });
+    $('#closehelp').click(function() {       
+       $('#driverhelp').hide();
+    });
+    
 });
 </script>
 
@@ -16,6 +24,7 @@
     #id_description { width: 300px; }
     #id_hostname { width: 200px; }
       #id_uri { width: 400px; }
+      #id_type { width: 200px;}
 </style>
 
 {% load extras %}
@@ -26,6 +35,8 @@
 	<div class="post_date"> <a href="#"></a></div>
 	<div class="post_body">
   
+        <input class="form_bt_adicionar" style="float: right;" type="submit" value="{% trans "update libvirt capabilities" %}" onclick="window.location='{% url node_updatecapabilities node.id %}'"/>
+        
   <input class="form_bt_ativar" style="float: right;" type="submit" value="Update Domains" onclick="window.location='{% url node_updatedomains node.id %}'"/>
   
     <form class="formx" action="{% url node_save %}" method="post">
@@ -35,7 +46,15 @@
        
         {% for field in form %}
         <p>
-            {{ field.label_tag }} {{ field }} &nbsp; 
+            {{ field.label_tag }} {{ field }} &nbsp;
+              {% if field.name == 'uri' %} <a href="#" id="showhelp"> {% trans "Help" %} </a>
+                  <div class="post_meta" style="font-size: 12px; display:none;" id="driverhelp">
+                       <a href="#" id="closehelp" style="float:right;"> {% trans "Close" %} </a>
+                      <h3> URI Help </h3>
+              	    <pre>{{ URIHELP }}</pre>
+              	</div>
+                {% endif %}
+                 
             <span class="fielderror"> {% for error in field.errors %} {{ error }} &nbsp; {% endfor %} </span>
         </p>    
         {% endfor %}
@@ -47,6 +66,7 @@
            </p>
     </form>
     
+
         
   <br/>
   <br/> 
@@ -66,7 +86,13 @@
 	    <h3> XML </h3>
 	      <pre>{{ node.capabilities }} </pre>
 	</div>
-	
+
+
+
+    <br/>
+    <br/>
+    <a class="remove" href="{% url node_delete node.id %}" onclick="return confirm('Confirm Delete ?');">&nbsp;</a>
+    	
 </div>
 
 

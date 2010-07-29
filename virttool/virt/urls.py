@@ -8,8 +8,9 @@ urlpatterns = patterns('',
     url(r'^node/$', 'virt.views.node.index', name="node_get"),
     url(r'^node/add/$', 'virt.views.node.add', name="node_add"),    
     url(r'^node/(\d+)/$', 'virt.views.node.edit', name="node_edit"),  
-    url(r'^node/(\d+)/updatedomains$', 'virt.views.node.updatedomains', name="node_updatedomains"),  
-
+    url(r'^node/(\d+)/updatedomains/$', 'virt.views.node.updatedomains', name="node_updatedomains"),  
+    url(r'^node/(\d+)/updatecapabilities/$', 'virt.views.node.updatecapabilities', name="node_updatecapabilities"),
+    
     url(r'^node/(\d+)/delete/$', 'virt.views.node.delete', name="node_delete"),       
     url(r'^node/save/$', 'virt.views.node.save', name="node_save"),    
     

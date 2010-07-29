@@ -2,7 +2,7 @@
 
 {% block menu2 %}
 		<ul>
-			<li><a href="{% url domain_add %}">Create Machine</a></li>
+			<li><a href="{% url domain_add %}">Create Domain</a></li>
 		</ul>
 
 {% endblock %}
@@ -60,7 +60,7 @@
                               <td> {{ dom.domain.name }}</td>
                               <td> {{ dom.domainlibvirt.0.info.1|memorysizeformat:"k" }} MB   </td>
                               <td> {{ dom.domainlibvirt.0.maxVcpus }} </td>
-                              <td> {{ dom.domainlibvirt.0.OSType|ostypeformat }} </td>
+                              <td> {{ dom.domainlibvirt.0.OSType|capfirst }} </td>
                               <td> {{ dom.domain.node }}</td>
                               <td> {{ dom.domainlibvirt.0.info.0|libvirtstate }} </td>
                               <td> <a class="edit" href="{% url domain_edit dom.domain.id %}">&nbsp;</a> <a class="remove" href="{% url domain_delete dom.domain.id %}" onclick="return confirm('Confirm Delete ?');">&nbsp;</a>&nbsp;</td>

@@ -2,23 +2,56 @@ from django.utils.translation import ugettext as _
 
 # A description of the connection type
 VIRT_INTERFACE_NAME = (
-    (0, 'Xen + TLS'),
-#    (1, 'Xen + SSH'),
-#    (2, 'KVM + TLS'),
-#    (3, 'KVM + SSH'),
-#    (4, 'Local'),
-    )
+    (0, 'Xen'),
+    (1, 'QEMU/KVM'),   
+    (2, 'VMWare'),
+    (3, 'VirtualBox')
+)
     
 
 # The Libvirt Connection URI
 VIRT_INTERFACE_URI = {
-    0: 'xen+tls://%s',
-#    1: 'xen+ssh://%s',
-#    2: 'qemu+tls://%s/system',
-#    3: 'qemu+ssh://%s/system',
-#    4: ':///',
+    0: 'xen://%s',
+    1: 'qemu://%s/system',
+    2: 'esx://%s',
+    3: 'vbox+tcp://root@%s/session',
 }
 
+
+DRIVERS_DESCRIPTION =  """
+
+Xen:
+    xen:///                          (local access, direct)
+    xen+unix:///                     (local access, via daemon)
+    xen://host.domain.com/           (remote access, TLS/x509) *Default (node type)
+    xen+tcp://host.domain.com/       (remote access, SASl/Kerberos)
+    xen+ssh://root@host.domain.com/  (remote access, SSH tunnelled)
+
+QEMU/Kvm: 
+    qemu:///session                          (local access to per-user instance)
+    qemu+unix:///session                     (local access to per-user instance)
+
+    qemu:///system                           (local access to system instance)
+    qemu+unix:///system                      (local access to system instance)
+    qemu://host.domain.com/system            (remote access, TLS/x509) *Default (node type)
+    qemu+tcp://host.domain.com/system        (remote access, SASl/Kerberos)
+    qemu+ssh://root@host.domain.com/system   (remote access, SSH tunnelled)
+
+VMWare    
+    vpx://host.domain.com                   (VPX over HTTPS)
+    esx://host.domain.com                   (ESX over HTTPS)  *Default (node type)
+    gsx://host.domain.com                   (GSX over HTTPS)
+    esx://host.domain.com/?transport=http   (ESX over HTTP)
+    esx://host.domain.com/?no_verify=1      (ESX over HTTPS, but doesn't verify the server's SSL certificate)
+        
+
+VirtualBox:
+    vbox:///session                          (local access to per-user instance)
+    vbox+unix:///session                     (local access to per-user instance)
+    vbox+tcp://user@host.domain.com/session  (remote access, SASl/Kerberos)  *Default (node type) (user=root)
+    vbox+ssh://user@host.domain.com/session  (remote access, SSH tunnelled)
+
+"""
 
 NODE_STATE = (
     (0, _('No State')),
@@ -43,26 +76,27 @@ DOMAIN_STATE = (
 
 
 
-DOM_TYPES = ( ('xen', 'xen'), 
-             # ('kvm', 'kvm') , 
-             # ('qemu','qemu'),
-             # ('lxc', 'lxc') 
+DOM_TYPES = ( ('xen', 'Xen'), 
+              ('kvm', 'Kvm') , 
+              ('qemu','QEMU'),
+              ('vmware','VMWare'),
+              ('vbox', 'Virtualbox')
              )
+
 
 GUEST_BOOT = (
             ('XEN_PV_DIRECTBOOT','XEN - Paravirtualized guest direct kernel boot'),
             ('XEN_PV_BOOTLOADER','XEN - Paravirtualized guest bootloader'),
             ('XEN_FV_DIRECTBOOT','XEN - Fullyvirtualized guest direct kernel boot'),
             ('XEN_FV_BIOSBOOT', 'XEN - Fullyvirtualized guest BIOS boot'),
-            ('QEMU', 'QEMU - QEMU emulated guest on x86_64'),
-            ('KVM', 'KVM - KVM hardware accelerated guest on i686'),
+            ('QEMU', 'QEMU - QEMU emulated guest'),
+            ('KVM', 'KVM - KVM hardware accelerated guest'),
 )              
 
 
-OS_TYPES = (  ('linux', 'Linux - Xen PV' ), 
-              ('hvm', 'HVM - Fully Virtualized'), 
-              #('qemu','QEMU/KVM PV') 
-              )
+OS_TYPES = (  ('hvm', 'HVM - Fully Virtualized'),
+              ('linux', 'Linux - Xen PV' ), 
+           )
               
 BOOT_TYPES_KEYS = ( ('c', 'hd'), ('d', 'cdrom'), ('cd', 'hd,cdrom'), ('dc', 'cdrom,hd'), ('a', 'floppy'), 
                ('n', 'network'), ('ac', 'floppy,hd'), ('an', 'floppy,network'), 
@@ -112,25 +146,47 @@ DISK_DRIVER_CACHE = ( ('default','default'), ('none','none'), ('writethrough','w
 
 DISKDEV_TYPES = ( ('disk', 'disk'), ('cdrom', 'cdrom'), ('floppy', 'floppy') )
 DISKBUS_TYPES = ( ('scsi', 'scsi'), ('ide', 'ide'), ('virtio', 'virtio'), ('xen', 'xen'), ('usb', 'usb') )
+
 GRAPHICTYPES = ( ('vnc','vnc'), 
-                 #('sdl','sdl'),
+                 ('sdl','sdl'), 
                  #('rdp','rdp') 
                  )
 
 INPUT_BUS = ( ('usb','usb') , ('ps2','ps2'), ('xen','xen') )
 INPUT_TYPES = ( ('mouse','mouse'), ('tablet','tablet') )
 
-
-VIDEOMODEL_TYPES = (('vga','Vga'),
-                    ('cirrus','Cirrus'),
-                    ('vmvga','VMVga'),
-                    ('xen','Xen'),
-                    ('vbox','VBox'))
-                    
-
+VIDEOMODEL_TYPES = (('vga','Vga'), ('cirrus','Cirrus'), ('vmvga','VMVga'), ('xen','Xen'), ('vbox','VBox') )
 SOUND_MODELS = ( ('es1370', 'es1370'), ('sb16','sb16'), ('ac97','ac97') )
-
-
 BOOTLOADER_DEFAULT='/usr/bin/pygrub'
+
+SERIAL_TYPES = ( ('pty','pty'),  # Pseudo TTY   
+              ('dev','dev'),     # Host device proxy
+              ('pipe','pipe'),   # Named pipe
+              ('vc','vc'),       # Virtual console
+              ('null','null'),   # Null device
+              ('file','file')    # Device logfile
+              )
+
+CONSOLE_TYPES = ( ('pty','pty'), # Pseudo TTY 
+                  ('stdio','stdio'), # Domain logfile
+                  )
+
+PARALLEL_TYPES = ( ('pty','pty') )
+
+                  
+
+# VMWARE SCSI CONTROLLER 
+VMWARE_SCSI_CONTROLLER = (
+                ('auto','Auto'),
+                ('buslogic','buslogic'),  # BusLogic SCSI controller for older guests. 
+                ('lsilogic','lsilogic'),  # LSI Logic SCSI controller for recent guests. 
+                ('lsisas1068','lsisas1068'), # LSI Logic SAS 1068 controller. Since 0.8.0
+                ('vmpvscsi','vmpvscsi') # Special VMware Paravirtual SCSI controller, requires VMware tools inside the guest. Since 0.8.3
+                )
+                
+                
+
+
+
 
 

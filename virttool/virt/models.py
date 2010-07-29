@@ -31,7 +31,13 @@ class Node(models.Model):
           Return instance libvirt.virConnect and 
           dict(libvirt.libvirtError[code,message])
         """
-        URI = self.uri or VIRT_INTERFACE_URI[self.type] %self.hostname
+        
+        VIRT_INTERFACE_ = None
+        
+        if self.hostname:
+            VIRT_INTERFACE_ = VIRT_INTERFACE_URI[self.type] %self.hostname
+
+        URI = self.uri or VIRT_INTERFACE_
         try:
             return libvirt.open(URI), None                       
         except libvirt.libvirtError, le:
@@ -111,6 +117,13 @@ class Node(models.Model):
                 #    existing_domain.save()
                         
     
+
+    def getdict(self):
+        """
+           Return Capabilities dictionary python 
+        """
+        return xmltool.get_capabilities_dict(self.capabilities)
+        
                         
     class Meta:
         ordering = 'name',

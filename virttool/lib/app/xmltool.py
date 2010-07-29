@@ -84,7 +84,7 @@ def get_device_dict(XML,exclude=[]):
         
         # exclude 
         if child0.nodeType == child0.ELEMENT_NODE and child0.localName in exclude:
-            child1.parentNode.removeChild(child1)
+            child0.parentNode.removeChild(child0)
         
         # Disk Device
         if child0.nodeType == child0.ELEMENT_NODE and child0.localName == 'disk':
@@ -116,7 +116,10 @@ def get_device_dict(XML,exclude=[]):
                     
                 else:
                     device['args'] = child1.toxml()
-                         
+        
+
+            
+                             
         # Interface Device
         if child0.nodeType == child0.ELEMENT_NODE and child0.localName == 'interface':
             device['type'] = child0.localName
@@ -150,9 +153,40 @@ def get_device_dict(XML,exclude=[]):
                     device['mac'] = child1.getAttribute('address').upper()
                 else:
                     device['args'] = child1.toxml()
-                    
 
+
+        # Controller (VMWare)
+        if child0.nodeType == child0.ELEMENT_NODE and child0.localName == 'controller':
+            device['type'] = child0.localName
+            device['controller_type'] = child0.getAttribute('type')
+            device['index'] = child0.getAttribute('index')
+            device['model'] = child0.getAttribute('model')
+                                            
+
+        # Hostdev ( virtualbox, KVM )   
+        if child0.nodeType == child0.ELEMENT_NODE and child0.localName == 'hostdev':
+            device['type'] = child0.localName
+            device['mode'] = child0.getAttribute('mode')
+            type_ = child0.getAttribute('type')
+            device['hostdev_type'] = type_
             
+            for child1 in child0.childNodes:
+                if child1.nodeType == child1.ELEMENT_NODE and child1.localName == 'source':
+                    for child2 in child1.childNodes:
+                        if type_ == 'pci':
+                            if child2.nodeType == child2.ELEMENT_NODE and child2.localName == 'address':
+                                device['bus'] = child2.getAttribute('bus')
+                                device['slot'] = child2.getAttribute('slot')
+                                device['function'] = child2.getAttribute('function')
+                        if type_ == 'usb':
+                            if child2.nodeType == child2.ELEMENT_NODE and child2.localName == 'vendor':
+                                device['vendor'] = child2.getAttribute('id')
+                            if child2.nodeType == child2.ELEMENT_NODE and child2.localName == 'product':    
+                                device['product'] = child2.getAttribute('id')
+                                
+                                
+                        
+             
                             
         # Emulator
         if child0.nodeType == child0.ELEMENT_NODE and child0.localName == 'emulator':
@@ -193,23 +227,91 @@ def get_device_dict(XML,exclude=[]):
         # Console, Parallel, serial 
         if child0.nodeType == child0.ELEMENT_NODE and child0.localName in ['console','serial','parallel']:
             device['type'] = child0.localName
+            device['%s_type'] = child0.getAttribute('type')
+            
             
             for child1 in child0.childNodes:
                 if child1.nodeType == child1.ELEMENT_NODE and child1.localName == 'source':
                     device['source'] = child1.getAttribute('path')
                 if child1.nodeType == child1.ELEMENT_NODE and child1.localName == 'target':
                     device['target'] = child1.getAttribute('port')
-                    
-        
-        # Hostdev 
+
         
         # Sound 
+        if child0.nodeType == child0.ELEMENT_NODE and child0.localName == 'sound':
+            device['type'] = child0.localname
+            device['model'] = child0.getAttribute('model')
+            
         
         # Video 
-            
+        if child0.nodeType == child0.ELEMENT_NODE and child0.localName == 'video':
+            device['type'] = child0.localName
+            for child1 in child0.childNodes:
+                if child1.nodeType == child1.ELEMENT_NODE and child1.localName == 'model':
+                    device['video_type'] = child1.getAttribute('type')
+                    device['vram'] = child1.getAttribute('vram')
+                    device['heads'] = child1.getAttribute('heads')
+                    for child2 in child1.childNodes:
+                        if child2.nodeType == child2.ELEMENT_NODE and child2.localName == 'acceleration':
+                            if child2.getAttribute('accel3d'):
+                                device['accel3d'] = child2.getAttribute('accel3d')
+                            if child2.getAttribute('accel2d'):
+                                device['accel2d'] = child2.getAttribute('accel2d')
+                    
+        
+        
     return device      
+    
 
+def get_capabilities_dict(XML, exclude=[]):
+    """
+      Return python dict from XML libvirt
+    """
+    
+    capabilities = {}
+    
+    try:
+        xml = ElementTree.fromstring(XML)
+    
+    
+        # cpus available
+        capabilities['cpus'] = xml.findall('.//cpus')[0].get('num') if xml.findall('.//cpus') else 1
 
+        # live migration support
+        capabilities['live_migration'] = True if xml.findall('.//migration_features/live') else False 
+
+        # guest available 
+        capabilities['guest'] = []
+        for guest in xml.findall('guest'):
+            guestdic = {}
+    
+            # arch 
+            guestdic['arch'] = guest.find('arch').get('name') if guest.find('arch') else None
+    
+            # domain type
+            guestdic['domain_type'] = guest.findall('.//domain')[0].get('type') if guest.findall('.//domain') else None
+
+            # get os_type, machine, emulator 
+            for tagsel in ['os_type','machine','emulator','wordsize','loader']:
+                guestdic[tagsel] = guest.findall('.//%s' %tagsel)[0].text if guest.findall('.//%s' %tagsel) else None
+    
+            # features acpi, apic, pae, nonpae
+            guestdic['features_acpi'] = True if guest.findall('.//features/acpi') else None
+            guestdic['features_apic'] = True if guest.findall('.//features/apic') else None
+            guestdic['features_pae'] = True if guest.findall('.//features/pae') else None
+            guestdic['features_nonpae'] = True if guest.findall('.//features/nonpae') else None
+        
+            capabilities['guest'].append(guestdic)
+    except:
+        print "capabilities invalid xml"
+            
+
+        
+    return capabilities    
+
+            
+    
+    
 def getxml(libvirtxml,options=None):
     """
       format xml attributes 
@@ -276,8 +378,8 @@ def getxml(libvirtxml,options=None):
                                     if interfacedict.get('mac'):
                                         xml_ = libvirttemplate.INTERFACE('bridge', options.get('defaultbridge'),interfacedict.get('mac'))
                                     else:
-                                        macxen = libvirttemplate.macxen()
-                                        xml_ = libvirttemplate.INTERFACE('bridge',options.get('defaultbridge'), macxen[0])
+                                        macgen = libvirttemplate.macgen(50,typedomain)
+                                        xml_ = libvirttemplate.INTERFACE('bridge',options.get('defaultbridge'), macgen[0])
                             if fiximport == True:        
                                 devices.append(dict(type='interface',xml=xml_))
                             else:
@@ -349,25 +451,23 @@ def build_device_xml(dev,exclude=[]):
                                                  dev.get('autoport'),
                                                  dev.get('vnc_port') or '-1', 
                                                  dev.get('vnc_passwd'))
+        if dev.get('graphics_type') == 'sdl':
+            xml += libvirttemplate.GRAPHICAL_SDL(dev.get('sdl_display'),
+                                                 dev.get('sdl_fullscreen'),
+                                                 dev.get('sdl_xauth'))
         
+                                                     
+                                                         
     
     if dev.get('type') == 'input':
-        xml += libvirttemplate.INPUT_DEVICE(dev.get('input_type'),dev.get('bus'))
-    
+        xml += libvirttemplate.INPUT_DEVICE(dev.get('input_type'),dev.get('bus'))    
     if dev.get('type') == 'serial':
-        xml += libvirttemplate.SERIAL_PORT(dev.get('source'),dev.get('target'))
+        xml += libvirttemplate.SERIAL_PORT(dev.get('target'), dev.get('serial_type'),dev.get('source'))
     if dev.get('type') == 'console':
-        xml += libvirttemplate.CONSOLE_PORT(dev.get('source'), dev.get('target'))
+        xml += libvirttemplate.CONSOLE_PORT(dev.get('target'), dev.get('console_type'), dev.get('source'))
+    if dev.get('type') == 'parallel':
+        xml += libvirttemplate.PARALLEL_PORT(dev.get('target'), dev.get('parallel_type'), dev.get('source'))
+        
                          
-
-            
-                                             
     return xml 
                 
-                
-                
-    
-                        
-            
-
-            

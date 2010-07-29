@@ -15,17 +15,6 @@ def memorysize(value,typev):
     return value
 
 
-@register.filter(name='ostypeformat')
-@stringfilter
-def ostypeformat(value):
-    if value == 'hvm':
-        return "Windows"
-    elif value == 'linux':
-        return "Linux"
-    else:
-        return "?"
-
-
 @register.filter(name='ndomain')
 @stringfilter
 def numdomains(value):

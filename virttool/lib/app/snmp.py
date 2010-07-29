@@ -17,8 +17,11 @@ class Snmp(object):
         p = Popen("snmpwalk -c %s -v %s %s %s" %(community,version,host,oid), shell=True, stdout=PIPE)
         out = p.stdout.readlines()
         value = []
-        for o in out:         
-            value.append(o.split('=')[1].strip())   
+        for o in out:      
+            try:   
+                value.append(o.split('=')[1].strip())   
+            except:
+                pass
         p.communicate()    
         return value
         

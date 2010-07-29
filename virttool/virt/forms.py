@@ -137,17 +137,62 @@ class EmulatorForm(forms.ModelForm):
         model = virt.models.Device
         exclude = ('xml','domain','type','xml',)
         
-    emulator = StrippedCharField(label=_('Emulator'),required=False)
+    emulator = StrippedCharField(label=_('Emulator'))
    
     
-class CSPForm(forms.ModelForm):
+class SerialForm(forms.ModelForm):
+    class Meta:
+        model = virt.models.Device
+        exclude = ('xml','domain','type','xml',)
+    serial_type =  forms.CharField(label=_('Type'),max_length=10, widget=forms.Select(choices=virt.models.SERIAL_TYPES))   
+    source = StrippedCharField(label=_('Source Path'), max_length=128, required=False)
+    target = forms.IntegerField(label=_('Target Port'), initial=0)   
+
+
+class ConsoleForm(forms.ModelForm):
+    class Meta:
+        model = virt.models.Device
+        exclude = ('xml','domain','type','xml',)
+    console_type =  forms.CharField(label=_('Type'),max_length=10, widget=forms.Select(choices=virt.models.CONSOLE_TYPES))   
+    source = StrippedCharField(label=_('Source Path'), max_length=128, required=False)
+    target = forms.IntegerField(label=_('Target Port'), initial=0)    
+
+
+class ParallelForm(forms.ModelForm):
+    class Meta:
+        model = virt.models.Device
+        exclude = ('xml','domain','type','xml',)
+    parallel_type =  forms.CharField(label=_('Type'),max_length=10, widget=forms.Select(choices=virt.models.PARALLEL_TYPES))   
+    source = StrippedCharField(label=_('Source Path'), max_length=128)
+    target = forms.IntegerField(label=_('Target Port'), initial=0)    
+
+
+class HostdevUSBForm(forms.ModelForm):
     class Meta:
         model = virt.models.Device
         exclude = ('xml','domain','type','xml',)
         
-    source = StrippedCharField(label=_('Source'), max_length=128, required=False)
-    target = StrippedCharField(label=_('Target'), max_length=128, required=False)   
+    hostdev_type =  forms.CharField(label=_('Type'),initial='usb')       
+    vendor = StrippedCharField(label=_('Vendor'), max_length=30)
+    product = StrippedCharField(label=_('Product'), max_length=30) 
+
+
+class HostdevPCIForm(forms.ModelForm):
+    class Meta:
+        model = virt.models.Device
+        exclude = ('xml','domain','type','xml',)
     
+    hostdev_type =  forms.CharField(label=_('Type'),initial='pci')    
+    bus = StrippedCharField(label=_('Bus'), max_length=50)
+    slot = StrippedCharField(label=_('Slot'), max_length=50)
+    function = StrippedCharField(label=_('Function'), max_length=50)
+ 
+
+
+
+
+    
+
 class GenericDeviceForm(forms.ModelForm):
     class Meta:
         model = virt.models.Device

@@ -2,7 +2,7 @@
 {% load i18n extras %}
 {% block menu2 %}
 		<ul>
-			<li class="current_page_item"><a href="{% url domain_add %}">Create Machine</a></li>
+			<li class="current_page_item"><a href="{% url domain_add %}">Create Domain</a></li>
 		</ul>
 
 {% endblock %}
@@ -249,7 +249,30 @@
     
     </table>
     <br/>
-    <br/>
+     
+     <h3> Emulator </h3>
+     <a style="float: right;" href="{% url device_add domain.id 'emulator' %}"> {% trans "Add" %} </a>
+     <table class="tablex" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+          <th> Path</th>
+          <th>  &nbsp;  </th>
+     </tr>
+
+     {% for emulator in domain.getemulator %}
+     <tr>
+         <td> {{ emulator.getdict.emulator }} </td>
+         <td> 
+             <a class="edit" href="{% url device_edit emulator.id %}">&nbsp;</a> 
+             <a class="remove" href="{% url device_delete emulator.id %}" onclick="return confirm('Confirm Delete ?');">&nbsp;</a> 
+         </td>
+     </tr>
+
+     {% endfor %}
+
+     </table>
+     <br/>
+     <br/>
+     
      
      
     

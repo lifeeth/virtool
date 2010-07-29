@@ -18,8 +18,12 @@ def getformdevice(typedev):
             return forms.GraphicsForm
         elif tdev == 'input':
             return forms.InputForm
-        elif tdev in ['console','serial','parallel']:
-            return forms.CSPForm
+        elif tdev == 'console':
+            return forms.ConsoleForm
+        elif tdev == 'serial':
+            return forms.SerialForm
+        elif tdev == 'parallel':
+            return forms.ParallelForm
         elif tdev == 'emulator':
             return forms.EmulatorForm
         else:
@@ -64,7 +68,7 @@ def add(request, domainid, typedevice):
         
         if typedevice == 'interface':
             try:    
-                form = getform(initial={'mac' : xmltool.libvirttemplate.macxen()[0]}, instance=device_)
+                form = getform(initial={'mac' : xmltool.libvirttemplate.macgen(50,domain.type)[0]}, instance=device_)
             except:
                 form = getform(instance=device_)
         else:

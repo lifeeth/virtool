@@ -43,24 +43,7 @@ def BASIC_RESOURCE(memory, vcpu, currentMemory=None):
     xml += "  <vcpu>%s</vcpu>\n" %vcpu
     return xml 
 
-# Fullyvirtualized guest BIOS boot
-# args:
-#   type        : example: hvm
-#   loader      : path hvmloader ( ex: /usr/lib/xen-3.2-1/boot/hvmloader )
-#   boot dev    : hd, cdrom
 
-def OS_BIOS_BOOT(type_, loader=None, boot=None):
-    xml = "  <os>\n"
-    xml += "    <type>%s</type>\n"%type_
-
-    if loader:
-        xml += "    <loader>%s</loader>\n" %loader
-    if boot:
-        xml += """    <boot dev="%s"/>\n""" %boot
-    xml += "  </os>\n"
-    return xml 
-
-    
 # Host bootloader
 # Hypervisors employing paravirtualization do not usually emulate a BIOS, 
 # and instead the host is responsible to kicking off the operating system boot. 
@@ -82,6 +65,12 @@ def HOST_BOOTLOADER(bootloader=None, bootloader_args=None):
     return xml
     
 
+# Fullyvirtualized guest BIOS boot
+# args:
+#   type        : example: hvm
+#   loader      : path hvmloader ( ex: /usr/lib/xen-3.2-1/boot/hvmloader )
+#   boot dev    : hd, cdrom
+    
 # Paravirtualized guest direct kernel boot
 # args: 
 #   kernel :  path vmlinuz kernel ( ex: /boot/vmlinuz-2.6.26-2-xen-amd64)
@@ -286,33 +275,55 @@ def GRAPHICAL_RDP(autoport=True, multiuser=True):
         xml += """ multiUser="yes\""""
     xml +="/>\n"
     return xml
+
+def GRAPHICAL_SDL(display=':0.0',fullscreen=True,xauth=None):
+    xml += """<graphics type='sdl'"""
+    if xauth:
+        xml += """ xauth='%s'""" %xauth
+    if fullscreen:
+        xml += """ fullscreen='yes'"""
+    xml += """ display='%s'/>""" %display
     
 # args: source path, target path
 # source path='/dev/pts/0 
 # target port='0'
 
-def SERIAL_PORT(source,target):
-  return """
-<serial type='pty'>
-  <source path='%s'/>
-  <target port='%s'/>
- </serial>
-""" %(source,target)
-
+def SERIAL_PORT(target,type_='pty',source=None):
+    xml = """<serial type="%s">\n""" %type_
+    if source:
+        xml += """  <source path="%s"/>\n""" %source
+    xml += """  <target port="%s"/>\n""" %target
+    xml += "</serial>\n"
+    
+    return xml 
+    
 
 
 # args: sourcepath, target path
 # source path='/dev/pts/0 
 # target port='0'
 
-def CONSOLE_PORT(source,target):
-    return """
-<console type='pty'>
-  <source path='%s'/>
-  <target port='%s'/>
-</console>
-""" %(source,target)
+def CONSOLE_PORT(target,type_='pty',source=None):
+    
+    xml = """<console type="%s">\n""" %type_
+    if source:
+        xml += """  <source path="%s"/>\n""" %source
+    xml += """  <target port="%s"/>\n""" %target
+    xml += "</console>\n"
+    
+    return xml
 
+
+
+# parallel port 
+def PARALLEL_PORT(source,target,type_='pty'):
+    xml = """<parallel type="%s">\n""" %type_
+    if source:
+        xml += """  <source path="%s"/>\n""" %source
+    xml += """  <target port="%s"/>\n""" %target
+    xml += "</parallel>\n"
+    
+    return xml
 
 
 # Sound devices
@@ -320,50 +331,109 @@ def CONSOLE_PORT(source,target):
 #
 # model: 'es1370', 'sb16', and 'ac97' (ac97 since libvirt 0.6.0 )
 
-SOUND_DEVICE = """
-<sound model='%s'/>"""
+def SOUND(model):
+    return"""
+<sound model='%s'/>
+""" %model
 
+
+# Video devices
+# model
+#    The model element has a mandatory type attribute which 
+#    takes the value "vga", "cirrus", "vmvga", "xen" or "vbox". 
+#     You can also #provide the amount of video memory in kilobytes using vram and the number of screen with heads. 
+# acceleration
+#    If acceleration should be enabled (if supported) using the accel3d and accel2d attributes in the acceleration element.
+
+def VIDEO(type_='vga',vram=8192,heads=1,accel3d=True):
+    xml = """
+<video>
+  <model type='%s' vram='%s' heads='%s'>
+""" %(type_,vram,heads)
+    if accel3d:
+        xml += """<acceleration accel3d='yes' accel3d='yes'/>
+"""
+    xml += "</model>\n"
+    xml += "</video>\n"
+    
+    return xml 
+    
 
 # USB and PCI Devices 
 #
 # args: vendor id, function id, ex: 0x1234, 0xbeef
 
-USB_DEVICE = """
+def HOSTDEV_USB(vendor,product):
+    return """
 <hostdev mode='subsystem' type='usb'>
     <source>
       <vendor id='%s'/>
       <product id='%s'/>
     </source>
-</hostdev>"""
+</hostdev>
+""" %(vendor,product)
+
 
 # args : bus, slot, function, ex: bus='0x06', slot='0x02', function='0x0'
-PCI_DEVICE = """
+def HOSTDEV_PCI(bus,slot,function):
+    return """
 <hostdev mode='subsystem' type='pci'>
      <source>
        <address bus='%s' slot='%s' function='%s'/>
      </source>
-</hostdev>"""
+</hostdev>
+""" %(bus,slot,function)
+
+
+
 
 
 END_DOMAIN = """</domain>"""
 
-def macxen(amount=50):
+def macgen(amount=50,mtype='xen'):
     """
-    Generate random valid MAC address for XEN Domains
+    Generate random valid MAC address for Domains
     """
     
+    # Registered MAC address prefixes
+    vmwareprefix='00:50:56:'
+    xenprefix='00:16:3E:'
+    vboxprefix='08:00:27:'
+    qemuprefix='52:54:00:'
+    openvzprefix='00:18:51:'
+    
+    # default xen prefix
+    macprefix=xenprefix
+    
+    # VMWare mac address prefix
+    if mtype == 'vmware':
+        macprefix=vmwareprefix
+    
+    # Virtualbox prefix    
+    if mtype == 'vbox':
+        macprefix=vboxprefix
+    
+    # QEMU/KVM prefix
+    if mtype == 'qemu' or mtype == 'kvm':
+        macprefix=qemuprefix
+    
+    # OpenVZ prefix
+    if mtype == 'openvz':
+        macprefix=openvzprefix
+    
+            
     maclist = []
     for iface in virt.models.Device.objects.filter(type='interface'):
         if iface.getdict().get('mac'):
             maclist.append(str(iface.getdict().get('mac')).upper())
                
-    xenmacs = []
+    macs = []
     for mac in [ ':'.join(['%02x' % random.randint(0,255) for p in range(3)]) for r in range(amount) ]:
-        mac = '00:16:3E:' + mac.upper()
+        mac = '%s%s' %(macprefix,mac.upper())
         if mac not in maclist:
-            xenmacs.append(mac) 
+            macs.append(mac) 
     
-    return xenmacs
+    return macs
     
     
 
