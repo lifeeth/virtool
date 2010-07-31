@@ -32,7 +32,7 @@
 <div class="post">
 
 
-	<div class="post_title"><h2><a href="#">Create Device {{ type }}</a></h2></div>
+	<div class="post_title"><h2 class="{{type}}icon"><a href="#">Create Device {{ type }}</a></h2></div>
 	<div class="post_date"> <a href="#"></a></div>
 	<div class="post_body">
         
@@ -49,7 +49,13 @@
             {% for field in form %}
             <p>    
                 {{ field.label_tag }} {{ field }} 
-                <span class="fielderror"> {% for error in field.errors %} {{ error }} &nbsp; {% endfor %} </span>
+                 {% if field.errors %}
+                    <span class="fielderror"> {% for error in field.errors %} {{ error }} &nbsp; {% endfor %} </span>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <br/><span class="help"> {{ field.help_text }} </span>
+                    {% endif %}
+                    
             </p>    
             {% endfor %}
         

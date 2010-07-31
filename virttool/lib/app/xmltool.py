@@ -79,6 +79,7 @@ def get_device_dict(XML,exclude=[]):
     
     device = {}
     xml = parseString(XML)
+    args = str()
     
     for child0 in xml.childNodes:
         
@@ -115,9 +116,10 @@ def get_device_dict(XML,exclude=[]):
                     device['shareable'] = True    
                     
                 else:
-                    device['args'] = child1.toxml()
-        
+                    if len(child1.toxml().strip()) > 0:
+                        args += "%s\n" %child1.toxml()
 
+            device['args'] = args
             
                              
         # Interface Device
@@ -152,22 +154,29 @@ def get_device_dict(XML,exclude=[]):
                 elif child1.nodeType == child1.ELEMENT_NODE and child1.localName == 'mac':
                     device['mac'] = child1.getAttribute('address').upper()
                 else:
-                    device['args'] = child1.toxml()
+                    if len(child1.toxml().strip()) > 0:
+                        args += "%s\n" %child1.toxml()
+            device['args'] = args
 
 
         # Controller (VMWare)
         if child0.nodeType == child0.ELEMENT_NODE and child0.localName == 'controller':
             device['type'] = child0.localName
-            device['controller_type'] = child0.getAttribute('type')
-            device['index'] = child0.getAttribute('index')
-            device['model'] = child0.getAttribute('model')
+            if child0.getAttribute('type'):
+                device['controller_type'] = child0.getAttribute('type')
+            if child0.getAttribute('index'):
+                device['index'] = child0.getAttribute('index')
+            if child0.getAttribute('model'):
+                device['model'] = child0.getAttribute('model')
                                             
 
         # Hostdev ( virtualbox, KVM )   
         if child0.nodeType == child0.ELEMENT_NODE and child0.localName == 'hostdev':
             device['type'] = child0.localName
-            device['mode'] = child0.getAttribute('mode')
-            type_ = child0.getAttribute('type')
+            if child0.getAttribute('mode'):
+                device['mode'] = child0.getAttribute('mode')
+            if child0.getAttribute('type'):
+                type_ = child0.getAttribute('type')
             device['hostdev_type'] = type_
             
             for child1 in child0.childNodes:
@@ -175,9 +184,13 @@ def get_device_dict(XML,exclude=[]):
                     for child2 in child1.childNodes:
                         if type_ == 'pci':
                             if child2.nodeType == child2.ELEMENT_NODE and child2.localName == 'address':
-                                device['bus'] = child2.getAttribute('bus')
-                                device['slot'] = child2.getAttribute('slot')
-                                device['function'] = child2.getAttribute('function')
+                                if child2.getAttribute('bus'):
+                                    device['bus'] = child2.getAttribute('bus')
+                                if child2.getAttribute('slot'):
+                                    device['slot'] = child2.getAttribute('slot')
+                                if child2.getAttribute('function'):
+                                    device['function'] = child2.getAttribute('function')
+                                    
                         if type_ == 'usb':
                             if child2.nodeType == child2.ELEMENT_NODE and child2.localName == 'vendor':
                                 device['vendor'] = child2.getAttribute('id')
@@ -324,6 +337,7 @@ def getxml(libvirtxml,options=None):
     devices = []
 
     devt = ['disk',
+            'controller',
             #'interface',
             'graphics',
             'parallel',
@@ -396,7 +410,7 @@ def getxml(libvirtxml,options=None):
 def build_domain_xml(dom,exclude=[]):
     xml = str()
     
-    xml += libvirttemplate.GENERAL_METADATA(dom.get('type'), dom.get('name'))
+    xml += libvirttemplate.GENERAL_METADATA(dom.get('type'), dom.get('name'), dom.get('uuid'))
     xml += libvirttemplate.BASIC_RESOURCE(dom.get('memory'),dom.get('vcpu'),dom.get('currentMemory'))
     xml += libvirttemplate.HOST_BOOTLOADER(dom.get('bootloader'),dom.get('bootloader_args'))
     xml += libvirttemplate.OS_DETAIL(dom.get('os_type'),
@@ -421,18 +435,23 @@ def build_device_xml(dev,exclude=[]):
     if dev.get('type') == 'disk':
         xml += libvirttemplate.HARD_DRIVE(dev.get('disk_type'),
                                           dev.get('device'),
-                                          dev.get('driver'),
                                           dev.get('source'),
                                           dev.get('target'),
+                                          dev.get('target_bus'),
                                           dev.get('serial'),
                                           dev.get('readonly'),
                                           dev.get('shareable'),
+                                          dev.get('driver'),
                                           dev.get('driver_type'),
-                                          dev.get('target_bus'),
                                           dev.get('driver_cache'),
-                                          dev.get('options'))
-                                          
+                                          dev.get('args'))
     
+    # vmware scsi controller                                       
+    if dev.get('type') == 'controller':
+        xml += libvirttemplate.CONTROLLER(dev.get('controller_type'),
+                                          dev.get('index'),
+                                          dev.get('model'))
+                                          
     if dev.get('type') == 'interface':
         xml += libvirttemplate.INTERFACE(dev.get('interface_type'), 
                                          dev.get('source'), 
@@ -467,7 +486,15 @@ def build_device_xml(dev,exclude=[]):
         xml += libvirttemplate.CONSOLE_PORT(dev.get('target'), dev.get('console_type'), dev.get('source'))
     if dev.get('type') == 'parallel':
         xml += libvirttemplate.PARALLEL_PORT(dev.get('target'), dev.get('parallel_type'), dev.get('source'))
-        
+    
+    # hostdev (pci, usb) kvm and virtualbox 
+    if dev.get('type') == 'hostdev':
+        if dev.get('hostdev_type') == 'pci':
+            xml += libvirttemplate.HOSTDEV_PCI(dev.get('bus'), 
+                                               dev.get('slot'),
+                                               dev.get('function'))
+        if dev.get('hostdev_type') == 'usb':
+            xml += libvirttemplate.HOSTDEV_USB(dev.get('vendor'),dev.get('product'))
                          
     return xml 
                 

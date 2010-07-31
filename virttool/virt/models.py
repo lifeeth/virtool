@@ -5,6 +5,7 @@ from lib.app import snmp, xmltool
 from django.utils.translation import ugettext as _
 from constants import * 
 import fields
+from virt import helpforms
 import settings
 
 class Node(models.Model):    
@@ -14,13 +15,13 @@ class Node(models.Model):
     def __unicode__(self):
         return self.name
         
-    hostname = models.CharField(_('Hostname'), null=True, blank=True, max_length=255)
+    hostname = models.CharField(_('Hostname'), null=True, blank=True, max_length=255, help_text=helpforms.NODE_HOSTNAME)
     uri = models.CharField(_('URI'), max_length=255, null=True, blank=True, default=None)
     description = models.CharField(_('Description'), blank=False, max_length=255)
-    type = models.IntegerField(_('Node Type'), default=0, choices=VIRT_INTERFACE_NAME)
+    type = models.IntegerField(_('Node Type'), default=0, choices=VIRT_INTERFACE_NAME, help_text=helpforms.NODE_TYPE)
     state = models.IntegerField(default=0, choices=NODE_STATE)
     capabilities = models.TextField(null=True,blank=True)
-    defaultbridge = models.CharField(_('Bridge Default'), max_length=50, null=True, blank=True, default=None)
+    defaultbridge = models.CharField(_('Bridge Default'), max_length=50, null=True, blank=True, default=None, help_text=helpforms.NODE_DEFAULTBRIDGE)
     active = models.BooleanField(_('Active'), default=True,null=False)
     datecreated = models.DateTimeField(auto_now_add=True, null=False)
     datemodified = models.DateTimeField(auto_now=True, null=False)
@@ -166,9 +167,9 @@ class Domain(models.Model):
         if self.state not in [96,97,99]:   
             change=False         
             state = self.state
-            domain_, error_ = self.getlibvirt()
-            if domain_:
-                state_ = domain_.info()[0]
+            libvirtdomain, error_ = self.getlibvirt()
+            if libvirtdomain:
+                state_ = libvirtdomain.info()[0]
                 if state_ != state:
                     change=True
                     self.state = state_
@@ -202,6 +203,15 @@ class Domain(models.Model):
         return self.device_set.filter(type='parallel')
     def getchannel(self):
         return self.device_set.filter(type='channel')    
+    def getsound(self):
+        return self.device_set.filter(type='sound')
+    def getvideo(self):
+        return self.device_set.filter(type='video')
+    def gethostdev(self):
+        return self.device_set.filter(type='hostdev')
+    def getcontroller(self):
+        return self.device_set.filter(type='controller')
+            
     
     
     def getdict(self):
@@ -223,6 +233,7 @@ class Domain(models.Model):
         xmldomain+="<devices>\n"
         for devicetype in ['emulator',
                            'disk',
+                           'controller',
                            'interface',
                            'graphics',
                            'input',

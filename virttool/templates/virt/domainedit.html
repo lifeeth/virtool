@@ -2,7 +2,9 @@
 {% load i18n extras %}
 {% block menu2 %}
 		<ul>
-			<li class="current_page_item"><a href="{% url domain_add %}">Create Domain</a></li>
+			<li class="current_page_item"><a href="{% url domain_edit domain.id %}"> {% trans "Domain Info" %}</a></li>
+			<li class="current_page_item"><a href=""> &nbsp; {% trans "Transport" %}</a></li>
+			<li class="current_page_item"><a href=""> &nbsp; {% trans "Graphics" %}</a></li>
 		</ul>
 
 {% endblock %}
@@ -18,8 +20,7 @@
 
 
 <style type="text/css" media="screen">
-    #id_name {  width: 300px; }
-    #id_description { width: 300px; }
+    #id_name, #id_uuid, #id_description {  width: 300px; }
     #id_memory, #id_currentMemory, #id_vcpus { width: 90px; }
     #id_os_kernel, #id_os_initrd, #id_os_cmdline { width: 300px;}
     #id_os_type, #id_os_loader { width: 300px; }
@@ -60,7 +61,7 @@
             window.location='{% url domain_create domain.id %}'}"/>
             
             
-            	  	  	  	  
+        <div class="clear"> &nbsp; </div>    	  	  	  	  
 	  	      
 	    <form class="formx" action="{% url domain_save %}" method="post">
 
@@ -68,7 +69,12 @@
             {% for field in form %}
             <p>    
                 {{ field.label_tag }} {{ field }} 
-                <span class="fielderror"> {% for error in field.errors %} {{ error }} &nbsp; {% endfor %} </span>
+                 {% if field.errors %}
+                    <span class="fielderror"> {% for error in field.errors %} {{ error }} &nbsp; {% endfor %} </span>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <br/><span class="help"> {{ field.help_text }} </span>
+                    {% endif %}
             </p>    
             {% endfor %}
             
@@ -80,7 +86,7 @@
     <br/>
 
     
-    <h3> Disks </h3>
+    <h3 class="diskicon"> Disks </h3>
     <a style="float: right;" href="{% url device_add domain.id 'disk' %}"> {% trans "Add" %} </a>
     <table class="tablex" border="0" cellpadding="0" cellspacing="0">
      <tr>
@@ -121,7 +127,7 @@
     
 
     <br/>
-    <h3> Interfaces </h3>
+    <h3 class="interfaceicon"> Network Interfaces </h3>
     <a style="float: right;" href="{% url device_add domain.id 'interface' %}"> {% trans "Add" %} </a>
     <table class="tablex" border="0" cellpadding="0" cellspacing="0">
      <tr>
@@ -155,7 +161,7 @@
     <br/>
     
     <br/>
-    <h3> Graphics </h3>
+    <h3 class="graphicsicon"> Graphics </h3>
     <a style="float: right;" href="{% url device_add domain.id 'graphics' %}"> {% trans "Add" %} </a>
     <table class="tablex" border="0" cellpadding="0" cellspacing="0">
      <tr>
@@ -201,7 +207,7 @@
     </table>
     
     <br/>
-    <h3> Console </h3>
+    <h3 class="consoleicon"> Console </h3>
     <a style="float: right;" href="{% url device_add domain.id 'console' %}"> {% trans "Add" %} </a>
     <table class="tablex" border="0" cellpadding="0" cellspacing="0">
      <tr>
@@ -250,7 +256,7 @@
     </table>
     <br/>
      
-     <h3> Emulator </h3>
+     <h3 class="emulatoricon"> Emulator </h3>
      <a style="float: right;" href="{% url device_add domain.id 'emulator' %}"> {% trans "Add" %} </a>
      <table class="tablex" border="0" cellpadding="0" cellspacing="0">
       <tr>
@@ -280,9 +286,9 @@
 
    
     </div>
-	
+	 <h3 class="xmlicon"> XML </h3>
 	<div class="post_meta" style="font-size: 12px;">
-	    <h3> XML </h3>
+	   
 	      <pre>{{ domain.getxml }} </pre>
 	</div>
 

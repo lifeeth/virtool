@@ -84,14 +84,14 @@ DOM_TYPES = ( ('xen', 'Xen'),
              )
 
 
-GUEST_BOOT = (
-            ('XEN_PV_DIRECTBOOT','XEN - Paravirtualized guest direct kernel boot'),
-            ('XEN_PV_BOOTLOADER','XEN - Paravirtualized guest bootloader'),
-            ('XEN_FV_DIRECTBOOT','XEN - Fullyvirtualized guest direct kernel boot'),
-            ('XEN_FV_BIOSBOOT', 'XEN - Fullyvirtualized guest BIOS boot'),
-            ('QEMU', 'QEMU - QEMU emulated guest'),
-            ('KVM', 'KVM - KVM hardware accelerated guest'),
-)              
+
+XEN_GUEST_TYPES = (
+    ('XEN_PV_DB','XEN - Paravirtualized guest direct kernel boot'),
+    ('XEN_PV_BL','XEN - Paravirtualized guest bootloader'),
+    ('XEN_FV_DB','XEN - Fullyvirtualized guest direct kernel boot'),
+    ('XEN_FV_BB', 'XEN - Fullyvirtualized guest BIOS boot'),
+)
+
 
 
 OS_TYPES = (  ('hvm', 'HVM - Fully Virtualized'),
@@ -115,6 +115,7 @@ CLOCK_TYPES = ( ('utc','utc'),('localtime','localtime') )
 
 DEVICE_TYPES = (
     ('disk', 'Disk'),
+    ('controller', 'Controller'),
     ('interface','Interface'),
     ('graphics','Graphics'),
     ('parallel','Parallel'),
@@ -129,7 +130,16 @@ DEVICE_TYPES = (
     
 )
 
-DEVICE_TYPE_LIST = ['disk','interface','graphics','input','console','serial','parallel','emulator']
+DEVICE_TYPE_LIST = ['disk',
+                    'controller',
+                    'interface',
+                    'graphics',
+                    'input',
+                    'console',
+                    'serial',
+                    'parallel',
+                    'emulator',
+                    'hostdev']
 
 INTERFACE_TYPES = ( ('bridge', 'bridge'), ('network', 'network'),  
                   ('user', 'user'), ('ethernet', 'ethernet'), ('mcast', 'mcast'), 
@@ -177,11 +187,13 @@ PARALLEL_TYPES = ( ('pty','pty') )
 
 # VMWARE SCSI CONTROLLER 
 VMWARE_SCSI_CONTROLLER = (
-                ('auto','Auto'),
+                ('',''),
+                ('lsilogic','lsilogic'),  # LSI Logic SCSI controller for recent guests.     
                 ('buslogic','buslogic'),  # BusLogic SCSI controller for older guests. 
-                ('lsilogic','lsilogic'),  # LSI Logic SCSI controller for recent guests. 
+                ('auto','Auto'), # Auto
                 ('lsisas1068','lsisas1068'), # LSI Logic SAS 1068 controller. Since 0.8.0
-                ('vmpvscsi','vmpvscsi') # Special VMware Paravirtual SCSI controller, requires VMware tools inside the guest. Since 0.8.3
+                ('vmpvscsi','vmpvscsi') # Special VMware Paravirtual SCSI controller, 
+                                        # requires VMware tools inside the guest. Since 0.8.3
                 )
                 
                 

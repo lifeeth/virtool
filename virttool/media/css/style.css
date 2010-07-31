@@ -629,7 +629,13 @@ font-size: 12px;
 }
 
 
+.help { 
 
-
+padding-left: 100px;
+vertical-align: middle;
+font-size: 11px;
+color: #999999;
+line-height: 140%;
+}
 
 

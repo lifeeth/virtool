@@ -55,7 +55,13 @@
               	</div>
                 {% endif %}
                  
-            <span class="fielderror"> {% for error in field.errors %} {{ error }} &nbsp; {% endfor %} </span>
+                 {% if field.errors %}
+                    <span class="fielderror"> {% for error in field.errors %} {{ error }} &nbsp; {% endfor %} </span>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <br/><span class="help"> {{ field.help_text }} </span>
+                    {% endif %}
+                    
         </p>    
         {% endfor %}
 
@@ -73,17 +79,18 @@
       
      
 	</div>
-	
+	<h3 class="interfaceicon"> Network Interfaces </h3>
 	<div class="post_meta" style="font-size: 12px;">
-	    <h3> Network Interfaces </h3>
+	
 	      {% for dev in node.getnetdev %}
 	        {{ dev }} <br/>
 	      {% endfor %}
 	</div>
 	<br/><br/>
-
+    
+     <h3 class="xmlicon"> XML </h3>
 	<div class="post_meta" style="font-size: 12px;">
-	    <h3> XML </h3>
+	    
 	      <pre>{{ node.capabilities }} </pre>
 	</div>
 

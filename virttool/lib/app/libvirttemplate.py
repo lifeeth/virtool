@@ -9,12 +9,17 @@ import virt
 # args : 
 #  name : name for virtual machine. ( ex: host112 )
 
-def GENERAL_METADATA(type_,name):
-    return """
+def GENERAL_METADATA(type_,name, uuid=None):
+    xml = """
 <domain type="%s"> 
   <name>%s</name>
 """ %(type_,name)
-
+    
+    if uuid:
+        xml += "  <uuid>%s</uuid>\n" %uuid
+    
+    return xml    
+    
 
 # Basic resources
 # args: 
@@ -172,27 +177,30 @@ def EMULATOR(emulator):
 #           </encryption>
 
                    
-def HARD_DRIVE(type_,device,driver,source,target,serial=None, readonly=None, \
-                shareable=None, driver_type=None, target_bus=None, \
-                driver_cache=None, options=None):
+def HARD_DRIVE(type_, device, source, target, target_bus=None, serial=None, readonly=None, \
+               shareable=None, driver=None, driver_type=None, driver_cache=None, options=None):
     xml =  """<disk device="%s" type="%s">\n""" %(device,type_)
-    # driver
-    xml += """  <driver name="%s\"""" %driver
-    if driver_type:
-        xml += """ type="%s\"""" %driver_type
-    if driver_cache:
-        xml += """ cache="%s\"""" %driver_cache
-    xml += "/>\n"
+    
+    if driver:
+        # driver
+        xml += """  <driver name="%s\"""" %driver
+        if driver_type:
+            xml += """ type="%s\"""" %driver_type
+        if driver_cache:
+            xml += """ cache="%s\"""" %driver_cache
+        xml += "/>\n"
+    
     # source
     if type_ == 'file':
         xml += """  <source file="%s"/>\n""" %source
     else:
-        xml += """  <source dev="%s"/>\n""" %source
+        xml += """  <source dev="%s"/>\n""" %source    
+        
     # target
-    xml += """  <target dev="%s\"""" %target
+    xml += """  <target"""
     if target_bus:
         xml += """ bus="%s\"""" %target_bus
-    xml += "/>\n"
+    xml += """ dev="%s"/>\n""" %target
     
     if readonly:
         xml += "  <readonly/>\n"
@@ -202,7 +210,7 @@ def HARD_DRIVE(type_,device,driver,source,target,serial=None, readonly=None, \
         xml += "  <serial>%s</serial>\n" %serial
         
     if options:
-        xml +=options
+        xml +="%s\n" %options
     xml += "</disk>\n"
     
     return xml 
@@ -226,7 +234,7 @@ def INTERFACE(type_, source, mac=None, source_port=None, target=None, script=Non
             xml +=""" port="%s\"""" %source_port
         xml +="/>\n"
     if type_ == 'direct':
-        xml += """<source dev="%s" mode="vepa"/>\n""" %source
+        xml += """  <source dev="%s" mode="vepa"/>\n""" %source
     
        
     if mac and type_ in ['bridge','network','user']:
@@ -277,12 +285,12 @@ def GRAPHICAL_RDP(autoport=True, multiuser=True):
     return xml
 
 def GRAPHICAL_SDL(display=':0.0',fullscreen=True,xauth=None):
-    xml += """<graphics type='sdl'"""
+    xml += """<graphics type="sdl\""""
     if xauth:
-        xml += """ xauth='%s'""" %xauth
+        xml += """ xauth="%s\"""" %xauth
     if fullscreen:
-        xml += """ fullscreen='yes'"""
-    xml += """ display='%s'/>""" %display
+        xml += """ fullscreen="yes\""""
+    xml += """ display="%s"/>""" %display
     
 # args: source path, target path
 # source path='/dev/pts/0 
@@ -333,7 +341,7 @@ def PARALLEL_PORT(source,target,type_='pty'):
 
 def SOUND(model):
     return"""
-<sound model='%s'/>
+<sound model="%s"/>
 """ %model
 
 
@@ -348,12 +356,12 @@ def SOUND(model):
 def VIDEO(type_='vga',vram=8192,heads=1,accel3d=True):
     xml = """
 <video>
-  <model type='%s' vram='%s' heads='%s'>
+  <model type="%s" vram="%s" heads="%s">
 """ %(type_,vram,heads)
     if accel3d:
-        xml += """<acceleration accel3d='yes' accel3d='yes'/>
+        xml += """     <acceleration accel3d="yes" accel2d="yes"/>
 """
-    xml += "</model>\n"
+    xml += "  </model>\n"
     xml += "</video>\n"
     
     return xml 
@@ -365,10 +373,10 @@ def VIDEO(type_='vga',vram=8192,heads=1,accel3d=True):
 
 def HOSTDEV_USB(vendor,product):
     return """
-<hostdev mode='subsystem' type='usb'>
+<hostdev mode="subsystem" type="usb">
     <source>
-      <vendor id='%s'/>
-      <product id='%s'/>
+      <vendor id="%s"/>
+      <product id="%s"/>
     </source>
 </hostdev>
 """ %(vendor,product)
@@ -377,15 +385,23 @@ def HOSTDEV_USB(vendor,product):
 # args : bus, slot, function, ex: bus='0x06', slot='0x02', function='0x0'
 def HOSTDEV_PCI(bus,slot,function):
     return """
-<hostdev mode='subsystem' type='pci'>
+<hostdev mode="subsystem" type="pci">
      <source>
-       <address bus='%s' slot='%s' function='%s'/>
+       <address bus="%s" slot="%s" function="%s"/>
      </source>
 </hostdev>
 """ %(bus,slot,function)
 
 
-
+def CONTROLLER(type_='scsi',index='0', model=None):
+    
+    xml = """
+<controller type="%s" index="%s\"""" %(type_,index)
+    if model:
+        xml +=""" model="%s\"""" %model
+    xml +="/>\n"
+    
+    return xml 
 
 
 END_DOMAIN = """</domain>"""

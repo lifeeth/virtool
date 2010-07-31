@@ -12,6 +12,8 @@ def getformdevice(typedev):
     if tdev in models.DEVICE_TYPE_LIST:
         if tdev == 'disk':
             return forms.DiskForm
+        elif tdev == 'controller':
+            return forms.ControllerForm
         elif tdev == 'interface':
             return forms.InterfaceForm
         elif tdev == 'graphics':
@@ -28,6 +30,8 @@ def getformdevice(typedev):
             return forms.EmulatorForm
         else:
             return forms.GenericDeviceForm
+    else:
+        return forms.GenericDeviceForm
                  
          
 def add(request, domainid, typedevice):

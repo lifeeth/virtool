@@ -13,6 +13,7 @@ def migrate(domain, dstnode):
     
     if libvirtnodedst and libvirtdomain and domain.node != dstnode:
         # change state to wait migrate
+        oldstate = domain.state
         domain.state = 97
         domain.save()
         msg_ = ''
@@ -20,19 +21,15 @@ def migrate(domain, dstnode):
         try:
             libvirtdomain.migrate(libvirtnodedst, virt.models.libvirt.VIR_MIGRATE_LIVE, None, dstnode.hostname, 0)
             domain.node = dstnode
+            domain.state = oldstate
             domain.save()
             msg_ = _("Migration successful")
         except Exception, e:
             msg_ = e
         
-        # update state from current libvirtdomain
-        libvirtdomain, errordomain = domain.getlibvirt()
-        if libvirtdomain:
-            domain.state = libvirtdomain.info()[0]
-        else:
-            domain.state =  99
         
-        domain.save()
+        # update state from current libvirtdomain
+        domain.updatestate()
         return msg_ or _("Migration failed")
         
     else:

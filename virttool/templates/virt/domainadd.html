@@ -18,8 +18,7 @@
 </script>
 
 <style type="text/css" media="screen">
-        #id_name {  width: 300px; }
-        #id_description { width: 300px; }
+        #id_name, #id_uuid, #id_description {  width: 300px; }
         #id_memory, #id_currentMemory, #id_vcpus { width: 90px; }
         #id_os_kernel, #id_os_initrd, #id_os_cmdline { width: 300px;}
         #id_os_type, #id_os_loader { width: 300px; }
@@ -38,7 +37,13 @@
             {% for field in form %}
             <p> 
                 {{ field.label_tag }} {{ field }} 
+                {% if field.errors %}
                 <span class="fielderror"> {% for error in field.errors %} {{ error }} &nbsp; {% endfor %} </span>
+                {% endif %}
+                {% if field.help_text %}
+                    <br/><span class="help"> {{ field.help_text }} </span>
+                {% endif %}
+                
             </p>    
             {% endfor %}
         

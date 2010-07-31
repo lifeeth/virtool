@@ -201,6 +201,58 @@
 }
 
 
+.xmlicon { 
+  padding: 15px 10px 15px 55px;
+  border: 0px;
+  background: #FFFFFF URL('../images/xmlicon.png') left no-repeat;
+  font-size: 20px;
+  color: #445566;
+}
+
+.diskicon { 
+  padding: 15px 10px 15px 55px;
+  border: 0px;
+  background: #FFFFFF URL('../images/harddisk.png') left no-repeat;
+  font-size: 20px;
+  color: #445566;
+}
+
+.consoleicon { 
+  padding: 15px 10px 15px 55px;
+  border: 0px;
+  background: #FFFFFF URL('../images/console.png') left no-repeat;
+  font-size: 20px;
+  color: #445566;
+}
+
+.emulatoricon { 
+  padding: 15px 10px 15px 55px;
+  border: 0px;
+  background: #FFFFFF URL('../images/emulatoricon.png') left no-repeat;
+  font-size: 20px;
+  color: #445566;
+}
+
+.graphicsicon { 
+  padding: 15px 10px 15px 55px;
+  border: 0px;
+  background: #FFFFFF URL('../images/graphicsicon.png') left no-repeat;
+  font-size: 20px;
+  color: #445566;
+}
+
+
+.interfaceicon { 
+  padding: 15px 10px 15px 55px;
+  border: 0px;
+  background: #FFFFFF URL('../images/ethernet-icon.png') left no-repeat;
+  font-size: 20px;
+  color: #445566;
+}
+
+
+
+
 
 
 
