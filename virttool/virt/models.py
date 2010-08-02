@@ -315,7 +315,7 @@ class Device(models.Model):
             libvirtdomain_, error_ = self.domain.getlibvirt()
         if libvirtdomain_:
             # current domain xml - libvirt 
-            domxml = xmltool.getxml(libvirtdomain_.XMLDesc(0))            
+            domxml = xmltool.getxml(libvirtdomain_.XMLDesc(0))         
             # list devices 
             for devicexml in domxml.get('devices'):         
                 # check type 

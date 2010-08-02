@@ -126,7 +126,7 @@ def save(request):
             currentdevice.save()
                 
                 
-            return HttpResponseRedirect(reverse('domain_edit',args=[currentdevice.domain.id]))
+            return HttpResponseRedirect(reverse('device_edit',args=[currentdevice.id]))
         else:
             return render_to_response('virt/deviceedit.html', {'device': device,
                                                                'form': form }, 
@@ -139,12 +139,12 @@ def attachdevice(request,id):
     device = get_object_or_404(models.Device, pk=id)   
     message = virtclient.attachdevice(device)
     request.user.message_set.create(message=message)
-    return HttpResponseRedirect(reverse('domain_edit',args=[device.domain.id]))
+    return HttpResponseRedirect(reverse('device_edit',args=[device.id]))
 
     
 def detachdevice(request,id):
     device = get_object_or_404(models.Device, pk=id)   
     message = virtclient.detachdevice(device)
     request.user.message_set.create(message=message)
-    return HttpResponseRedirect(reverse('domain_edit',args=[device.domain.id]))
+    return HttpResponseRedirect(reverse('device_edit',args=[device.id]))
     

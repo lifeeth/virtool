@@ -38,11 +38,21 @@
         <div class="post_meta" style="font-size: 12px;">
     	    <h3> Domain Info </h3>
     	     {% trans "Domain Name" %}:  <a href="{% url domain_edit device.domain.id %}"> {{ device.domain.name }} </a> <br/>
-    	      
-    	     {% trans "Device connected" %}: <span style="font-weight: bold; font-size: 15px;"> {% if device.isconnected %} {% trans "Yes" %} {% else %} {% trans "No" %} {% endif %} </span>
+    	     {% trans "Device connected" %}: 
+      	           
+             {% if device.isconnected %} 
+    	          <span style="font-weight: bold; font-size: 15px;"> {% trans "Yes" %} </span> 
+    	             <input style="font-size: 11px;" type="submit" value="{% trans "Disconnect" %}" onclick="if (confirm('Confirm Detach ?')) { window.location='{% url device_detach device.id %}'}"/> 
+             {% else %} 
+                 <span style="font-weight: bold; font-size: 15px;">    {% trans "No" %} </span>    
+                    <input  style="font-size: 11px;" type="submit" value="{% trans "Connect" %}" onclick="if (confirm('Confirm Attach ?')) { window.location='{% url device_attach device.id %}'}"/>
+            {% endif %} 
+        </p>            
+           
+    	    
     	     
     	</div>
-    	
+    	<div class="clear"> &nbsp; </div>
         <form class="formx" action="{% url device_save %}" method="post">
             <input type="hidden" name="id" value="{{ device.id }}" id="id"/>
             <input type="hidden" name="type" value="{{ device.type }}" id="type"/>
