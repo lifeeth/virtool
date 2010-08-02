@@ -42,15 +42,16 @@
       	           
              {% if device.isconnected %} 
     	          <span style="font-weight: bold; font-size: 15px;"> {% trans "Yes" %} </span> 
-    	             <input style="font-size: 11px;" type="submit" value="{% trans "Disconnect" %}" onclick="if (confirm('Confirm Detach ?')) { window.location='{% url device_detach device.id %}'}"/> 
+    	         
              {% else %} 
                  <span style="font-weight: bold; font-size: 15px;">    {% trans "No" %} </span>    
-                    <input  style="font-size: 11px;" type="submit" value="{% trans "Connect" %}" onclick="if (confirm('Confirm Attach ?')) { window.location='{% url device_attach device.id %}'}"/>
+                   
             {% endif %} 
-        </p>            
-           
-    	    
-    	     
+            
+            <input style="font-size: 11px; float:right;"   type="submit" value="{% trans "Disconnect" %}" onclick="if (confirm('Confirm Detach ?')) { window.location='{% url device_detach device.id %}'}"/> 
+           <input  style="font-size: 11px; float:right;"  type="submit" value="{% trans "Connect" %}" onclick="if (confirm('Confirm Attach ?')) { window.location='{% url device_attach device.id %}'}"/>
+   	    
+
     	</div>
     	<div class="clear"> &nbsp; </div>
         <form class="formx" action="{% url device_save %}" method="post">
