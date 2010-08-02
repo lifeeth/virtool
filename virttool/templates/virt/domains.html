@@ -55,14 +55,14 @@
                 
                 
                       {% for dom in domains.object_list %}
-                          {% if dom.domainlibvirt.0 %}
+                          {% if dom.libvirtdomain.0 %}
                           <tr>
                               <td> {{ dom.domain.name }}</td>
-                              <td> {{ dom.domainlibvirt.0.info.1|memorysizeformat:"k" }} MB   </td>
-                              <td> {{ dom.domainlibvirt.0.maxVcpus }} </td>
-                              <td> {{ dom.domainlibvirt.0.OSType|capfirst }} </td>
+                              <td> {{ dom.libvirtdomain.0.info.1|memorysizeformat:"k" }} MB   </td>
+                              <td> {{ dom.libvirtdomain.0.maxVcpus }} </td>
+                              <td> {{ dom.libvirtdomain.0.OSType|capfirst }} </td>
                               <td> {{ dom.domain.node }}</td>
-                              <td> {{ dom.domainlibvirt.0.info.0|libvirtstate }} </td>
+                              <td> {{ dom.libvirtdomain.0.info.0|libvirtstate }} </td>
                               <td> <a class="edit" href="{% url domain_edit dom.domain.id %}">&nbsp;</a> <a class="remove" href="{% url domain_delete dom.domain.id %}" onclick="return confirm('Confirm Delete ?');">&nbsp;</a>&nbsp;</td>
                           </tr>
                            {% else %}
@@ -73,7 +73,7 @@
                                <td> - </td>
                                <td> - </td>
                                <td> {{ dom.domain.node }}</td>
-                               <td> {% if dom.domainlibvirt.1 %} 
+                               <td> {% if dom.libvirtdomain.1 %} 
                                       Domain-0 unavailable
                                     {% else %}
                                    Powered Off 

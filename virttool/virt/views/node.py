@@ -3,8 +3,8 @@ from django.utils.translation import ugettext as _
 from virt import models, forms
 
 def index(request):
-    
-    nodelist = [ dict(node=node, nodelibvirt=node.getlibvirt()) for node in models.Node.objects.all() ]
+
+    nodelist = [ dict(node=node, nodelibvirt=node.getlibvirt() if node.active else None) for node in models.Node.objects.all() ]
     paginator = Paginator(nodelist, 200)
     
     try:
@@ -31,7 +31,7 @@ def add(request):
             fnode.save()
     
             # getting libvirt virConnect instance to optimize register
-            libvirtnode = newnode.getlibvirt()
+            libvirtnode, libvirterror_ = newnode.getlibvirt()
     
             # update capabilities, name, state from libvirt 
             newnode.update_capabilities(libvirtnode=libvirtnode)

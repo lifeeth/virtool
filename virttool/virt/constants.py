@@ -75,7 +75,6 @@ DOMAIN_STATE = (
     )
 
 
-
 DOM_TYPES = ( ('xen', 'Xen'), 
               ('kvm', 'Kvm') , 
               ('qemu','QEMU'),

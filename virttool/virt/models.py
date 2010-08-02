@@ -15,13 +15,15 @@ class Node(models.Model):
     def __unicode__(self):
         return self.name
         
-    hostname = models.CharField(_('Hostname'), null=True, blank=True, max_length=255, help_text=helpforms.NODE_HOSTNAME)
+    hostname = models.CharField(_('Hostname'), max_length=255, help_text=helpforms.NODE_HOSTNAME)
     uri = models.CharField(_('URI'), max_length=255, null=True, blank=True, default=None)
     description = models.CharField(_('Description'), blank=False, max_length=255)
-    type = models.IntegerField(_('Node Type'), default=0, choices=VIRT_INTERFACE_NAME, help_text=helpforms.NODE_TYPE)
+    type = models.IntegerField(_('Node Type'), default=0, choices=VIRT_INTERFACE_NAME, \
+                                                          help_text=helpforms.NODE_TYPE)
     state = models.IntegerField(default=0, choices=NODE_STATE)
     capabilities = models.TextField(null=True,blank=True)
-    defaultbridge = models.CharField(_('Bridge Default'), max_length=50, null=True, blank=True, default=None, help_text=helpforms.NODE_DEFAULTBRIDGE)
+    defaultbridge = models.CharField(_('Bridge Default'), max_length=50, null=True, blank=True, \
+                                            default=None, help_text=helpforms.NODE_DEFAULTBRIDGE)
     active = models.BooleanField(_('Active'), default=True,null=False)
     datecreated = models.DateTimeField(auto_now_add=True, null=False)
     datemodified = models.DateTimeField(auto_now=True, null=False)
@@ -32,12 +34,8 @@ class Node(models.Model):
           Return instance libvirt.virConnect and 
           dict(libvirt.libvirtError[code,message])
         """
-        
-        VIRT_INTERFACE_ = None
-        
-        if self.hostname:
-            VIRT_INTERFACE_ = VIRT_INTERFACE_URI[self.type] %self.hostname
 
+        VIRT_INTERFACE_ = VIRT_INTERFACE_URI[self.type] %self.hostname
         URI = self.uri or VIRT_INTERFACE_
         try:
             return libvirt.open(URI), None                       
@@ -49,13 +47,15 @@ class Node(models.Model):
         """
           Update name, capabilities, state from libvirt 
         """
-        node_, error_ = libvirtnode or self.getlibvirt()
-        if node_:
-            self.capabilities = node_.getCapabilities()
+        if libvirtnode:
+            libvirtnode_, error_ = libvirtnode,None
+        else:
+            libvirtnode_, error_ = self.getlibvirt()
+        if libvirtnode_:
+            self.capabilities = libvirtnode_.getCapabilities()
             self.state = 1
         else:
-            self.state = 2
-            
+            self.state = 2            
         if autosave == True:
             self.save()
 
@@ -82,13 +82,17 @@ class Node(models.Model):
         """
           Import all domains from Node 
         """        
-        node_, erro_ = libvirtnode or self.getlibvirt()
-
-        if node_:
-            libvirtdomains = [ node_.lookupByID(ID) for ID in node_.listDomainsID()[1:] ]
-            domainlist = [ domain_.name for domain_ in Domain.objects.all() ]
+        if libvirtnode:
+            libvirtnode_, erro_ = libvirtnode, None
+        else:
+            libvirtnode_, error_ = self.getlibvirt()
+            
+        if libvirtnode_:
+            libvirtdomains = [ libvirtnode_.lookupByID(ID) for ID in libvirtnode_.listDomainsID()[1:] ]
             for libvirtdomain in libvirtdomains:
-                if libvirtdomain.name() not in domainlist:
+                
+                # import domains
+                if Domain.objects.filter(name=libvirtdomain.name()).count() == 0:
                     new_domain = Domain()
                     new_domain.name=libvirtdomain.name()
                     new_domain.description='Virtual Machine %s' %libvirtdomain.name()
@@ -104,6 +108,8 @@ class Node(models.Model):
                     new_domain.type = xmlf.get('type')
                     new_domain.xml= xmlf.get('domain')
                     new_domain.save()
+                    
+                    # import devices
                     for d in xmlf.get('devices'):
                         new_device = Device()
                         new_device.domain = new_domain
@@ -152,22 +158,28 @@ class Domain(models.Model):
     def getlibvirt(self,libvirtnode=None):
         """
           Return Domain libvirt
-        """       
-        node_, error_ = libvirtnode or self.node.getlibvirt()
+        """     
+          
+        if libvirtnode:
+            libvirtnode_, error_ = libvirtnode, None
+        else:
+            libvirtnode_, error_ = self.node.getlibvirt()
         try:    
-            return node_.lookupByName(self.name), error_
+            return libvirtnode_.lookupByName(self.name), error_
         except:
             return None, error_
             
     
-    def updatestate(self):
+    def update_state(self,libvirtnode=None):
         """
            Update state Domain 
         """
+        
+        # 96 = Powered Off by user, 97 = Wait Migrate, 99 = Disabled
         if self.state not in [96,97,99]:   
             change=False         
             state = self.state
-            libvirtdomain, error_ = self.getlibvirt()
+            libvirtdomain, error_ = self.getlibvirt(libvirtnode)
             if libvirtdomain:
                 state_ = libvirtdomain.info()[0]
                 if state_ != state:
@@ -288,6 +300,37 @@ class Device(models.Model):
     
     def __unicode__(self):
         return "%s - %s : %s" %(self.domain,self.type,self.description)
+    
+    
+    
+    def isconnected(self,libvirtdomain=None):
+        """
+           Return Boolean
+           Check if device is connected
+        """
+        
+        if libvirtdomain:
+            libvirtdomain_, error_ = libvirtdomain, None
+        else:
+            libvirtdomain_, error_ = self.domain.getlibvirt()
+        if libvirtdomain_:
+            # current domain xml - libvirt 
+            domxml = xmltool.getxml(libvirtdomain_.XMLDesc(0))
+            
+            # list devices 
+            for devicexml in domxml.get('devices'):                
+                # check type 
+                devicedict = xmltool.get_device_dict(devicexml.get('xml'))                
+                # if device is valid 
+                if devicedict:
+                    # check type 
+                    if devicedict.get('type') == self.type:
+                        # check device == device from (XMLDesc)
+                        if self.getdict() == devicedict:
+                            return True
+        return False
+        
+
     
     def getdict(self):
         """

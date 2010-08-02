@@ -233,6 +233,23 @@
   color: #445566;
 }
 
+.serialicon { 
+  padding: 15px 10px 15px 55px;
+  border: 0px;
+  background: #FFFFFF URL('../images/serialicon.png') left no-repeat;
+  font-size: 20px;
+  color: #445566;
+}
+
+.inputicon { 
+  padding: 15px 10px 15px 55px;
+  border: 0px;
+  background: #FFFFFF URL('../images/inputicon.png') left no-repeat;
+  font-size: 20px;
+  color: #445566;
+}
+
+
 .graphicsicon { 
   padding: 15px 10px 15px 55px;
   border: 0px;

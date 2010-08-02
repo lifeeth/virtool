@@ -22,22 +22,22 @@ def CheckNodes():
 
     domainslist = []
     print "Check Date %s" %datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    for node in models.Node.objects.all():
-        node_, error_ = node.getlibvirt()
-        if node_:
-            print "%s OK" %node
-            for ID in node_.listDomainsID()[1:]:
-                domainslist.append(node_.lookupByID(ID).name())
+    for node in models.Node.objects.filter(active=True):
+        libvirtnode, error_ = node.getlibvirt()
+        if libvirtnode:
+            print "%s OK" %node.name
+            for ID in libvirtnode.listDomainsID()[1:]:
+                domainslist.append(libvirtnode.lookupByID(ID).name())
             
             for domain in models.Domain.objects.filter(Q(node=node),
-                                                      ~Q(state__in=[96,97,99])):
-                domain.updatestate()
+                                                      ~Q(state__in=[95,96,97,99])):
+                domain.update_state(libvirtnode)
                 if domain.name not in domainslist:
                     print "%s Down" %domain.name
                     #
                     # check domain 
                     #
-                    if domain.state not in [0,1,2,3,4,95,97]:
+                    if domain.state not in [0,1,2,3,4,95,96,97]:
                         print "Libvirt creating domain %s" %domain.name
     
                         #virtclient.create(domain,node_)
@@ -50,15 +50,17 @@ def CheckNodes():
                     
         else:
             print "%s Down - %s" %(node,error_.get('msg'))
-            for d in node.domain_set.filter(~Q(state__in=[95,96,99])):
+            # 95 = Reboot by user, 96 = Powered Off by user, 97= Wait Migrate, 99 = Disabled
+            for d in node.domain_set.filter(~Q(state__in=[95,96,97,99])):
                 # check transport 
                 
+                # list all node to transport domain 
+                for nodetransport in d.transport_set.all():
+                    pass
                 
-                pass
-                
-                # migrate all domain node to other node 
-                #
-                #
+                    # migrate all domain node to other node 
+                    #
+                    #
     
             
 

@@ -29,7 +29,7 @@ def migrate(domain, dstnode):
         
         
         # update state from current libvirtdomain
-        domain.updatestate()
+        domain.update_state()
         return msg_ or _("Migration failed")
         
     else:

@@ -91,6 +91,7 @@ def edit(request,id):
     
     getform = getformdevice(device.type)
     form = getform(devdict,instance=device)
+
     return render_to_response('virt/deviceedit.html', {'device': device,
                                                        'form': form }, 
                                            context_instance=RequestContext(request))        

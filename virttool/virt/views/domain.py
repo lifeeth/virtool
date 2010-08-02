@@ -15,22 +15,16 @@ def index(request):
         query = query.strip()
         
     domainslist=[]   
-    if query:
-        nodequery = models.Node.objects.filter(Q(domain__name__icontains=query) | \
-                                                Q(domain__description__icontains=query)).order_by('name')
-    else:
-        nodequery = models.Node.objects.all().order_by('name')
-        
-    for node in nodequery:
-        nodelibvirt = node.getlibvirt()
-                
-        if query:
-            domainquery = models.Domain.objects.filter(Q(node=node), Q(name__icontains=query) | Q(description__icontains=query))
+    for node in models.Node.objects.filter(Q(domain__name__icontains=query) | \
+                                           Q(domain__description__icontains=query)).order_by('name') if query else \
+                models.Node.objects.all().order_by('name'):
+        if node.active == True:
+            libvirtnode, error_ = node.getlibvirt()
         else:
-            domainquery = models.Domain.objects.filter(Q(node=node))
-            
-        for domain in domainquery:
-            domainslist.append(dict(domain=domain,domainlibvirt=domain.getlibvirt(nodelibvirt)))    
+            libvirtnode, error_ = None,None
+        for domain in node.domain_set.filter(Q(name__icontains=query) | \
+                                             Q(description__icontains=query)) if query else node.domain_set.all():
+            domainslist.append(dict(domain=domain,libvirtdomain=domain.getlibvirt(libvirtnode) if libvirtnode else None))    
             
     paginator = Paginator(domainslist, 200)
     
