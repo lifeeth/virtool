@@ -308,25 +308,29 @@ class Device(models.Model):
            Return Boolean
            Check if device is connected
         """
-        
-        if libvirtdomain:
-            libvirtdomain_, error_ = libvirtdomain, None
-        else:
-            libvirtdomain_, error_ = self.domain.getlibvirt()
-        if libvirtdomain_:
-            # current domain xml - libvirt 
-            domxml = xmltool.getxml(libvirtdomain_.XMLDesc(0))         
-            # list devices 
-            for devicexml in domxml.get('devices'):         
-                # check type 
-                devicedict = xmltool.get_device_dict(devicexml.get('xml'))                
-                # if device is valid 
-                if devicedict:
+        try:
+            if libvirtdomain:
+                libvirtdomain_, error_ = libvirtdomain, None
+            else:
+                libvirtdomain_, error_ = self.domain.getlibvirt()
+            if libvirtdomain_:
+                # current domain xml - libvirt 
+                domxml = xmltool.getxml(libvirtdomain_.XMLDesc(0))         
+                # list devices 
+                for devicexml in domxml.get('devices'):         
                     # check type 
-                    if devicedict.get('type') == self.type:
-                        # check device == device from (XMLDesc)
-                        if self.getdict() == devicedict:
-                            return True
+                    devicedict = xmltool.get_device_dict(devicexml.get('xml'))                
+                    # if device is valid 
+                    if devicedict:
+                        # check type 
+                        if devicedict.get('type') == self.type:
+                            # check device == device from (XMLDesc)
+                            if self.getdict() == devicedict:
+                                return True
+        except Exception, e:
+            print e
+            pass
+            
         return False
         
 
